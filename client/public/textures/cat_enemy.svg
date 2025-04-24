@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Body -->
+  <rect x="16" y="24" width="32" height="16" fill="#555555" />
+  
+  <!-- Head -->
+  <rect x="12" y="16" width="24" height="16" fill="#666666" />
+  
+  <!-- Ears -->
+  <polygon points="12,16 8,8 16,12" fill="#555555" />
+  <polygon points="36,16 40,8 32,12" fill="#555555" />
+  
+  <!-- Eyes -->
+  <rect x="16" y="20" width="4" height="4" fill="#00ff00" />
+  <rect x="28" y="20" width="4" height="4" fill="#00ff00" />
+  
+  <!-- Nose -->
+  <rect x="22" y="24" width="4" height="2" fill="#ff69b4" />
+  
+  <!-- Mouth -->
+  <rect x="20" y="26" width="8" height="2" fill="#333333" />
+  
+  <!-- Legs -->
+  <rect x="16" y="40" width="4" height="8" fill="#555555" />
+  <rect x="28" y="40" width="4" height="8" fill="#555555" />
+  <rect x="40" y="40" width="4" height="8" fill="#555555" />
+  <rect x="48" y="36" width="4" height="4" fill="#555555" />
+  
+  <!-- Tail -->
+  <rect x="48" y="20" width="12" height="4" fill="#555555" />
+</svg>

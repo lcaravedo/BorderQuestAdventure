@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Snack wrapper -->
+  <rect x="12" y="16" width="40" height="32" rx="4" fill="#ff9900" />
+  
+  <!-- Wrapper highlights -->
+  <rect x="12" y="16" width="40" height="8" fill="#ffcc00" />
+  <rect x="12" y="40" width="40" height="8" fill="#cc7700" />
+  
+  <!-- Text area -->
+  <rect x="20" y="28" width="24" height="8" rx="2" fill="#ffffff" />
+  
+  <!-- Text on wrapper (simplified) -->
+  <rect x="24" y="30" width="16" height="4" fill="#ff0000" />
+  
+  <!-- Wrapper fold -->
+  <polygon points="12,16 20,24 52,24 52,16" fill="#ffcc00" opacity="0.6" />
+</svg>
