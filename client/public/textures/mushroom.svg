@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Mushroom cap -->
+  <path d="M12 32 C12 16 52 16 52 32 L12 32 Z" fill="#ff5555" />
+  
+  <!-- White spots on cap -->
+  <circle cx="20" cy="22" r="3" fill="#ffffff" />
+  <circle cx="32" cy="20" r="4" fill="#ffffff" />
+  <circle cx="44" cy="24" r="3" fill="#ffffff" />
+  <circle cx="28" cy="26" r="2" fill="#ffffff" />
+  <circle cx="38" cy="26" r="2" fill="#ffffff" />
+  
+  <!-- Stem -->
+  <rect x="26" y="32" width="12" height="14" fill="#eeeeee" />
+  
+  <!-- Ground shadow -->
+  <ellipse cx="32" cy="46" rx="8" ry="2" fill="#222222" opacity="0.3" />
+  
+  <!-- Glow effect -->
+  <circle cx="32" cy="28" r="20" fill="#ffff00" opacity="0.2" />
+</svg>
