@@ -5,6 +5,52 @@ import { Text } from '@react-three/drei';
 import { usePlayer } from '@/lib/stores/usePlayer';
 import { useAudio } from '@/lib/stores/useAudio';
 
+// Vibe particles component for visual effects
+function VibeParticles() {
+  const particles = useRef<THREE.Group>(null);
+  
+  // Animate particles
+  useFrame((state, delta) => {
+    if (!particles.current) return;
+    
+    // Rotate the entire particle system
+    particles.current.rotation.z += delta * 0.5;
+    
+    // Update individual particle positions if needed
+    Array.from({ length: 8 }).forEach((_, i) => {
+      const child = particles.current?.children[i];
+      if (child) {
+        // Pulsate size
+        child.scale.x = 0.5 + Math.sin(state.clock.elapsedTime * 2 + i) * 0.3;
+        child.scale.y = 0.5 + Math.sin(state.clock.elapsedTime * 2 + i) * 0.3;
+        child.scale.z = 0.5 + Math.sin(state.clock.elapsedTime * 2 + i) * 0.3;
+      }
+    });
+  });
+  
+  return (
+    <group ref={particles}>
+      {Array.from({ length: 8 }).map((_, i) => (
+        <mesh 
+          key={`particle-${i}`}
+          position={[
+            Math.sin((i / 8) * Math.PI * 2) * 1.5,
+            Math.cos((i / 8) * Math.PI * 2) * 1.5,
+            0
+          ]}
+        >
+          <sphereGeometry args={[0.1, 8, 8]} />
+          <meshBasicMaterial 
+            color={i % 2 === 0 ? "#ffff00" : "#ff8800"} 
+            transparent 
+            opacity={0.7} 
+          />
+        </mesh>
+      ))}
+    </group>
+  );
+}
+
 interface JointPowerUpProps {
   position: [number, number, number];
   id: string;
@@ -159,23 +205,7 @@ export default function JointPowerUp({ position, id, duration = 10000 }: JointPo
           </group>
           
           {/* Particle effects */}
-          {Array.from({ length: 8 }).map((_, i) => (
-            <mesh 
-              key={`particle-${i}`}
-              position={[
-                Math.sin(state.clock.elapsedTime * 2 + i) * 1.5,
-                Math.cos(state.clock.elapsedTime * 3 + i) * 1.5,
-                0
-              ]}
-            >
-              <sphereGeometry args={[0.1, 8, 8]} />
-              <meshBasicMaterial 
-                color={i % 2 === 0 ? "#ffff00" : "#ff8800"} 
-                transparent 
-                opacity={0.7} 
-              />
-            </mesh>
-          ))}
+          <VibeParticles />
         </group>
       )}
     </group>
