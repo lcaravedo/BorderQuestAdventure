@@ -1,0 +1,121 @@
+Product Requirements Document (PRD)
+🎮 Project Title
+"Chihuahua BorderQuest: 8-Bit Freedom Adventure"
+
+🎯 Objective
+Develop a retro-style 8-bit adventure game where the player controls a Chihuahua protagonist on an epic migration journey from the Atacama Desert in Chile to Texas, USA. The game combines classic platforming mechanics, pixel-style animation, and sociopolitical satire, culminating in an unexpected twist: the chihuahua finds a job as a lab rat in an electric car facility.
+
+🧩 Core Features & Gameplay Mechanics
+🐶 Main Character
+Protagonist: Chihuahua (name optional, customizable)
+
+Special abilities:
+
+Bark Attack (stuns enemies)
+
+Dig (hides from patrols)
+
+Sprint / Dash
+
+Wall Jump (optional unlock)
+
+🌎 Game Structure
+📍 Worlds & Courses
+
+World	Location	Levels (Courses)
+1	Andes Trail 🇨🇱🇧🇴🇵🇪	Atacama (Chile), Uyuni (Bolivia), Cusco, Lima, Máncora (Peru)
+2	Northern Tropics 🇪🇨🇨🇴🇻🇪	Guayaquil (Ecuador), Medellín, Barranquilla, Caracas
+3	Jungle Jump 🌴🦜	Darién I, Darién II, Panamá City, Costa Rica, Belize, Cancún
+4	Borderland 🇲🇽🇺🇸	CDMX, Tijuana I, Tijuana II, Border Crossing, Other Side
+5	The American Dream 🇺🇸⚡	Jailbreak, Texas Border, San Antonio, Tesla Lab Escape
+🎮 Game Mechanics
+Side-scrolling 8-bit platformer
+
+Enemies: Border Patrol Cats, Jungle Predators, Drones
+
+Bosses at end of each world
+
+Collectables: Bones, Visas, Power Snacks
+
+Environmental Hazards: sandstorms, jungle traps, drones, spotlights
+
+Upgrades system: stamina, bark power, disguise
+
+🖥️ User Interface
+If implemented as a web-based retro game, the UI should use shadcn/ui for the menus, progress tracking, and in-game overlays (dialog boxes, maps, level select screen). The visual styling should match a retro 8-bit aesthetic, using shadcn's clean and flexible component structure to modernize the user flow.
+
+Key components (suggested):
+
+Card: character stat previews
+
+Dialog: level complete screens
+
+Progress: stamina, health, immigration status
+
+Tabs: world selection
+
+Tooltip: item and power-up descriptions
+
+🔉 Audio/Visual Style
+Visuals: 8-bit pixel art
+
+Color palette: vibrant but region-themed (e.g., desert browns, jungle greens)
+
+Audio: Chiptune soundtrack per region; barking SFX; boss fight music
+
+Language: bilingual elements (English/Spanish) for signs and interactions
+
+🧠 Narrative & Progression
+Each level should subtly reference real cultural, geographical, and political themes. The tone is adventurous, occasionally satirical, but respectful. The narrative follows the Chihuahua’s pursuit of freedom, belonging, and work — ending in unexpected corporate servitude in an electric vehicle lab.
+
+📈 Game Progress Tracking
+Level unlocks after completion
+
+Simple save/load system (local storage if web-based)
+
+Scoreboard:
+
+Levels completed
+
+Items collected
+
+Time to complete
+
+Enemies stunned
+
+🛠️ Development Requirements
+
+Requirement	Notes
+Game Engine	Tech-agnostic (recommend: Phaser.js, Unity, Godot)
+UI Component System	Use shadcn/ui if web-based
+Hosting	Optional — Vercel, Netlify, or desktop/mobile
+Controller Support	Optional
+Save System	LocalStorage / IndexedDB / In-engine save
+✅ Deliverables
+Core engine with level structure + transitions
+
+Full map of 5 worlds, 5 courses each
+
+Playable character (Chihuahua) with animations + sound
+
+AI enemy types (border patrol cats, jungle enemies)
+
+First and last boss fights fully implemented
+
+shadcn/ui-styled web interface (menu, stats, settings, dialog boxes)
+
+Music & sound integration
+
+Win condition: Tesla lab level ends with “Employment Contract” screen
+
+🔮 Optional Enhancements
+Mobile support
+
+Co-op mode (two chihuahuas 🐶🐶)
+
+Minigames in jail / lab
+
+Choice-based dialogues (à la Undertale)
+
+Social share on level completion
+
