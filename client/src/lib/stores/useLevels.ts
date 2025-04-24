@@ -31,11 +31,11 @@ export const useLevels = create<LevelsState>()(
     currentWorld: 0,
     currentLevel: 0,
     
-    // By default only the first level of the first world is unlocked
+    // By default all levels of the first world are unlocked for testing
     unlockedLevels: {
-      0: [0], // World 1 (index 0), Level 1 (index 0) only
-      1: [],  // No levels unlocked in World 2
-      2: [],  // No levels unlocked in World 3
+      0: [0, 1, 2, 3, 4], // All levels in World 1 unlocked
+      1: [0, 1],  // Some levels in World 2
+      2: [0],  // First level in World 3
       3: [],  // No levels unlocked in World 4
       4: []   // No levels unlocked in World 5
     },
