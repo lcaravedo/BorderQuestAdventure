@@ -88,18 +88,24 @@ export default function PowerUp({ position, id, duration = 10000 }: PowerUpProps
       
       {/* Collection message */}
       {showMessage && (
-        <Text
-          position={[0, 2, 0]}
-          color="yellow"
-          fontSize={0.5}
-          anchorX="center"
-          anchorY="middle"
-          backgroundColor="#000000"
-          backgroundOpacity={0.7}
-          padding={0.2}
-        >
-          Power Up! Full Chihuahua Mode!
-        </Text>
+        <group position={[0, 2, 0]}>
+          {/* Black background for text */}
+          <mesh>
+            <planeGeometry args={[4, 0.6]} />
+            <meshBasicMaterial color="black" opacity={0.7} transparent />
+          </mesh>
+          
+          {/* Text message */}
+          <Text
+            position={[0, 0, 0.1]}
+            color="yellow"
+            fontSize={0.3}
+            anchorX="center"
+            anchorY="middle"
+          >
+            Power Up! Full Chihuahua Mode!
+          </Text>
+        </group>
       )}
     </group>
   );

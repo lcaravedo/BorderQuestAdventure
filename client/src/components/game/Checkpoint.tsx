@@ -90,18 +90,24 @@ export default function Checkpoint({ position, id }: CheckpointProps) {
       
       {/* Checkpoint message */}
       {showMessage && (
-        <Text
-          position={[0, 2, 0]}
-          color="white"
-          fontSize={0.5}
-          anchorX="center"
-          anchorY="middle"
-          backgroundColor="#000000"
-          backgroundOpacity={0.7}
-          padding={0.2}
-        >
-          Game Saved! ¡Salud!
-        </Text>
+        <group position={[0, 2, 0]}>
+          {/* Black background for text */}
+          <mesh>
+            <planeGeometry args={[3, 0.6]} />
+            <meshBasicMaterial color="black" opacity={0.7} transparent />
+          </mesh>
+          
+          {/* Text message */}
+          <Text
+            position={[0, 0, 0.1]}
+            color="white"
+            fontSize={0.3}
+            anchorX="center"
+            anchorY="middle"
+          >
+            Game Saved! ¡Salud!
+          </Text>
+        </group>
       )}
     </group>
   );

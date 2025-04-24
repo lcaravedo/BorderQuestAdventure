@@ -6,7 +6,7 @@ import { Progress } from "./progress";
 import { cn } from "@/lib/utils";
 
 export default function GameHUD() {
-  const { health, maxHealth } = usePlayer();
+  const { health, maxHealth, hearts, isPoweredUp } = usePlayer();
   const { collectibles } = useCollectibles();
   const { currentLevel, currentWorld } = useLevels();
   const [showMessage, setShowMessage] = useState(false);
@@ -35,8 +35,24 @@ export default function GameHUD() {
   
   return (
     <div className="absolute inset-0 pointer-events-none">
-      {/* Health Bar */}
+      {/* Health Bar and Hearts */}
       <div className="absolute top-4 left-4 w-48">
+        {/* Hearts display */}
+        <div className="text-xs text-white mb-1 flex items-center gap-1">
+          <span>HEARTS:</span>
+          <div className="flex">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <div 
+                key={`heart-${i}`}
+                className="text-xs"
+              >
+                <span className={i < hearts ? "text-red-500" : "text-gray-500"}>❤️</span>
+              </div>
+            ))}
+          </div>
+        </div>
+        
+        {/* Health bar */}
         <div className="text-xs text-white mb-1 flex justify-between">
           <span>HEALTH</span>
           <span>{health} / {maxHealth}</span>
@@ -50,6 +66,12 @@ export default function GameHUD() {
             healthPercentage >= 30 && healthPercentage < 70 && "bg-yellow-500"
           )}
         />
+        
+        {/* Power-up Status */}
+        <div className="mt-2 text-xs text-white flex items-center gap-2">
+          <div className={`w-3 h-3 rounded-full ${isPoweredUp ? 'bg-yellow-400' : 'bg-green-400'}`}></div>
+          <span>{isPoweredUp ? 'Chihuahua Mode' : 'Pear Head Mode'}</span>
+        </div>
       </div>
       
       {/* Level Info */}
@@ -59,7 +81,7 @@ export default function GameHUD() {
       </div>
       
       {/* Collectibles Counter */}
-      <div className="absolute top-20 left-4 bg-black/50 text-white px-3 py-1 rounded flex gap-3">
+      <div className="absolute top-28 left-4 bg-black/50 text-white px-3 py-1 rounded flex gap-3">
         <div className="flex items-center gap-1">
           <div className="w-3 h-3 bg-white rounded-full"></div>
           <span>{countCollectibles('bone')}</span>
@@ -83,7 +105,8 @@ export default function GameHUD() {
       
       {/* Controls Hint */}
       <div className="absolute bottom-4 left-4 bg-black/50 text-white p-2 text-xs rounded">
-        Press <span className="font-bold">?</span> for controls
+        <div>Press <span className="font-bold">?</span> for controls</div>
+        <div className="mt-1">Find <span className="font-bold">tequila statues</span> to save!</div>
       </div>
     </div>
   );

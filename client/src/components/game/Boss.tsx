@@ -79,8 +79,14 @@ export default function Boss({ position, id, health = 10, worldIndex }: BossProp
       }
     }
     
-    // Player attacks boss with bark
-    if (distance < 3 && playerAttackCooldown <= 0 && playerPosition[3] > 0) {
+    // Check for player bark attack
+    // We need to check the velocity instead of position for bark flag
+    const { velocity } = usePlayer();
+    const isBarkAttack = Array.isArray(velocity) && 
+                         velocity.length >= 4 && 
+                         velocity[3] > 0;
+                         
+    if (distance < 3 && playerAttackCooldown <= 0 && isBarkAttack) {
       // Take more damage if powered up
       const damageAmount = isPoweredUp ? 2 : 1;
       setBossHealth(prev => Math.max(0, prev - damageAmount));
@@ -144,18 +150,24 @@ export default function Boss({ position, id, health = 10, worldIndex }: BossProp
       
       {/* Victory message */}
       {showMessage && (
-        <Text
-          position={[0, 3, 0]}
-          color="yellow"
-          fontSize={0.5}
-          anchorX="center"
-          anchorY="middle"
-          backgroundColor="#000000"
-          backgroundOpacity={0.7}
-          padding={0.2}
-        >
-          ¡Victoria! +1 Heart Gained!
-        </Text>
+        <group position={[0, 3, 0]}>
+          {/* Black background for text */}
+          <mesh>
+            <planeGeometry args={[4, 0.6]} />
+            <meshBasicMaterial color="black" opacity={0.7} transparent />
+          </mesh>
+          
+          {/* Text message */}
+          <Text
+            position={[0, 0, 0.1]}
+            color="yellow"
+            fontSize={0.3}
+            anchorX="center"
+            anchorY="middle"
+          >
+            ¡Victoria! +1 Heart Gained!
+          </Text>
+        </group>
       )}
     </group>
   );

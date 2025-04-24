@@ -1,26 +1,20 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
   <!-- Pear-shaped head -->
-  <path d="M32 8 L40 16 L44 32 L40 48 L32 56 L24 48 L20 32 L24 16 Z" fill="#b4d455" />
+  <path d="M32 12 C42 12 48 20 48 30 C48 46 38 52 32 52 C26 52 16 46 16 30 C16 20 22 12 32 12 Z" fill="#d0eb5e" />
   
-  <!-- Eyes -->
-  <circle cx="28" cy="24" r="3" fill="#000000" />
-  <circle cx="36" cy="24" r="3" fill="#000000" />
-  
-  <!-- Mouth -->
-  <path d="M28 36 Q32 40 36 36" fill="none" stroke="#000000" stroke-width="2" />
+  <!-- Chihuahua face features -->
+  <circle cx="26" cy="24" r="2" fill="#333333" /> <!-- Left eye -->
+  <circle cx="38" cy="24" r="2" fill="#333333" /> <!-- Right eye -->
+  <ellipse cx="32" cy="32" rx="4" ry="3" fill="#333333" /> <!-- Nose -->
+  <path d="M26 36 Q32 40 38 36" fill="none" stroke="#333333" stroke-width="1.5" /> <!-- Mouth -->
   
   <!-- Ears -->
-  <path d="M24 16 L20 8 L28 12 Z" fill="#a4c445" />
-  <path d="M40 16 L44 8 L36 12 Z" fill="#a4c445" />
+  <path d="M20 15 Q16 10 18 5 Q24 10 20 15 Z" fill="#d0eb5e" /> <!-- Left ear -->
+  <path d="M44 15 Q48 10 46 5 Q40 10 44 15 Z" fill="#d0eb5e" /> <!-- Right ear -->
   
-  <!-- Body -->
-  <rect x="28" y="56" width="8" height="6" fill="#b4d455" />
+  <!-- Lighter color on bottom of pear -->
+  <path d="M32 44 C38 44 40 40 40 34 C40 40 38 48 32 48 C26 48 24 40 24 34 C24 40 26 44 32 44 Z" fill="#e8f7a0" />
   
-  <!-- Arms -->
-  <rect x="20" y="40" width="8" height="4" fill="#b4d455" />
-  <rect x="36" y="40" width="8" height="4" fill="#b4d455" />
-  
-  <!-- Legs -->
-  <rect x="28" y="62" width="3" height="6" fill="#a4c445" />
-  <rect x="33" y="62" width="3" height="6" fill="#a4c445" />
+  <!-- Small shadow under chin -->
+  <path d="M28 40 Q32 42 36 40" fill="#b0c83e" />
 </svg>
