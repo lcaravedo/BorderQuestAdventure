@@ -39,13 +39,18 @@ export default function Character({ position = [0, 1, 0] }) {
   // Get keyboard inputs
   const [subscribeKeys, getKeys] = useKeyboardControls();
 
-  // Create chihuahua sprite texture
+  // Load character textures
   const chihuahuaTexture = new THREE.TextureLoader().load('/textures/chihuahua.svg');
+  const pearHeadTexture = new THREE.TextureLoader().load('/textures/pear_head.svg');
   chihuahuaTexture.anisotropy = 16;
+  pearHeadTexture.anisotropy = 16;
   
-  // Create sprite material
+  // Get powered-up state from player store
+  const { isPoweredUp } = usePlayer();
+
+  // Create sprite material based on current form
   const spriteMaterial = new THREE.SpriteMaterial({ 
-    map: chihuahuaTexture, 
+    map: isPoweredUp ? chihuahuaTexture : pearHeadTexture, 
     color: 0xffffff,
   });
 
