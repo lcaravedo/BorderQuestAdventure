@@ -17,6 +17,7 @@ export default function GameMenu({ showGameOver = false }: GameMenuProps) {
   const { toggleMute, isMuted } = useAudio();
   const { resetProgress } = useLevels();
   const [showCredits, setShowCredits] = useState(false);
+  const [showControls, setShowControls] = useState(false);
   
   // Animation variants for title
   const titleVariants = {
@@ -79,10 +80,10 @@ export default function GameMenu({ showGameOver = false }: GameMenuProps) {
             variants={titleVariants}
           >
             <h1 className="text-4xl md:text-5xl font-bold text-white drop-shadow-[0_2px_2px_rgba(0,0,0,0.5)] mb-2">
-              CHIHUAHUA
+              KAYA
             </h1>
             <h2 className="text-3xl md:text-4xl font-bold text-white drop-shadow-[0_2px_2px_rgba(0,0,0,0.5)]">
-              BORDER QUEST
+              QUEST
             </h2>
             <p className="text-white text-lg mt-2">8-Bit Freedom Adventure</p>
           </motion.div>
@@ -115,6 +116,21 @@ export default function GameMenu({ showGameOver = false }: GameMenuProps) {
                   animate="animate"
                   variants={buttonVariants}
                 >
+                  <Button 
+                    variant="outline" 
+                    className="w-full text-white border-gray-600"
+                    onClick={() => setShowControls(true)}
+                  >
+                    CONTROLS
+                  </Button>
+                </motion.div>
+                
+                <motion.div
+                  custom={2}
+                  initial="initial"
+                  animate="animate"
+                  variants={buttonVariants}
+                >
                   <div className="flex items-center justify-between px-2 py-1">
                     <Label htmlFor="sound-toggle" className="text-white">Sound</Label>
                     <Switch
@@ -126,7 +142,7 @@ export default function GameMenu({ showGameOver = false }: GameMenuProps) {
                 </motion.div>
                 
                 <motion.div
-                  custom={2}
+                  custom={3}
                   initial="initial"
                   animate="animate"
                   variants={buttonVariants}
@@ -141,7 +157,7 @@ export default function GameMenu({ showGameOver = false }: GameMenuProps) {
                 </motion.div>
                 
                 <motion.div
-                  custom={3}
+                  custom={4}
                   initial="initial"
                   animate="animate"
                   variants={buttonVariants}
@@ -163,6 +179,46 @@ export default function GameMenu({ showGameOver = false }: GameMenuProps) {
             <div className="h-12 w-full max-w-md bg-green-900"></div>
           </div>
           
+          {/* Controls modal */}
+          {showControls && (
+            <div className="fixed inset-0 flex items-center justify-center bg-black/80 z-50">
+              <Card className="max-w-md w-full bg-gray-900 border-gray-700">
+                <CardContent className="p-6">
+                  <h2 className="text-2xl font-bold text-white mb-4">CONTROLS</h2>
+                  <div className="text-gray-300 space-y-3">
+                    <div className="grid grid-cols-2 gap-2 border-b border-gray-700 pb-2">
+                      <div className="font-bold">Movement:</div>
+                      <div>Arrow Keys or A/D</div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2 border-b border-gray-700 pb-2">
+                      <div className="font-bold">Jump:</div>
+                      <div>Space, W, or Up Arrow</div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2 border-b border-gray-700 pb-2">
+                      <div className="font-bold">Bark:</div>
+                      <div>J Key</div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2 border-b border-gray-700 pb-2">
+                      <div className="font-bold">Dig:</div>
+                      <div>K Key</div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2 pb-2">
+                      <div className="font-bold">Dash:</div>
+                      <div>L Key or Left Shift</div>
+                    </div>
+                  </div>
+                  <Button 
+                    variant="outline" 
+                    className="w-full mt-4 text-white border-gray-600"
+                    onClick={() => setShowControls(false)}
+                  >
+                    CLOSE
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+          
           {/* Credits modal */}
           {showCredits && (
             <div className="fixed inset-0 flex items-center justify-center bg-black/80 z-50">
@@ -170,7 +226,7 @@ export default function GameMenu({ showGameOver = false }: GameMenuProps) {
                 <CardContent className="p-6">
                   <h2 className="text-2xl font-bold text-white mb-4">CREDITS</h2>
                   <div className="text-gray-300 space-y-4">
-                    <p>Chihuahua BorderQuest: 8-Bit Freedom Adventure</p>
+                    <p>Kaya Quest: 8-Bit Freedom Adventure</p>
                     <p>A satirical game about immigration, travel, and unexpected career paths.</p>
                     <p>Created with React, Three.js, and shadcn/ui.</p>
                   </div>
