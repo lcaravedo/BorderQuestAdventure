@@ -90,7 +90,7 @@ export default function LevelSelect() {
         animate={{ y: 0, opacity: 1 }}
         className="text-center mb-6"
       >
-        <h1 className="text-3xl font-bold text-white drop-shadow-lg">SELECT LEVEL</h1>
+        <h1 className="text-3xl font-bold text-white drop-shadow-lg">KAYA QUEST - SELECT LEVEL</h1>
       </motion.div>
       
       <Card className="w-full max-w-3xl bg-gray-900/90 border-gray-700 shadow-xl">
