@@ -27,7 +27,12 @@ export enum CollectibleType {
 export enum EnemyType {
   CAT = "cat",
   DRONE = "drone",
-  PATROL = "patrol"
+  PATROL = "patrol",
+  FROG = "frog",
+  SNAKE = "snake",
+  SHARK = "shark",
+  FISH = "fish",
+  MOUSE = "mouse"
 }
 
 // Game constants for physics, etc.
