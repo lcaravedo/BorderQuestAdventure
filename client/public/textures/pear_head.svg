@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Pear-shaped head -->
+  <path d="M32 8 L40 16 L44 32 L40 48 L32 56 L24 48 L20 32 L24 16 Z" fill="#b4d455" />
+  
+  <!-- Eyes -->
+  <circle cx="28" cy="24" r="3" fill="#000000" />
+  <circle cx="36" cy="24" r="3" fill="#000000" />
+  
+  <!-- Mouth -->
+  <path d="M28 36 Q32 40 36 36" fill="none" stroke="#000000" stroke-width="2" />
+  
+  <!-- Ears -->
+  <path d="M24 16 L20 8 L28 12 Z" fill="#a4c445" />
+  <path d="M40 16 L44 8 L36 12 Z" fill="#a4c445" />
+  
+  <!-- Body -->
+  <rect x="28" y="56" width="8" height="6" fill="#b4d455" />
+  
+  <!-- Arms -->
+  <rect x="20" y="40" width="8" height="4" fill="#b4d455" />
+  <rect x="36" y="40" width="8" height="4" fill="#b4d455" />
+  
+  <!-- Legs -->
+  <rect x="28" y="62" width="3" height="6" fill="#a4c445" />
+  <rect x="33" y="62" width="3" height="6" fill="#a4c445" />
+</svg>
