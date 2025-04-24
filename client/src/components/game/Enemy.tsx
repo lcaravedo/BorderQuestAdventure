@@ -7,8 +7,9 @@ import { useAudio } from "@/lib/stores/useAudio";
 interface EnemyProps {
   position: [number, number, number];
   patrolArea: [number, number]; // Min and max x positions for patrol
-  type: 'cat' | 'drone';
+  type: 'cat' | 'drone' | 'frog' | 'snake' | 'shark' | 'fish' | 'mouse';
   speed?: number;
+  isWaterEnemy?: boolean; // For water-based enemies like fish and sharks
 }
 
 export default function Enemy({
@@ -16,6 +17,7 @@ export default function Enemy({
   patrolArea,
   type = 'cat',
   speed = 1.5,
+  isWaterEnemy = false,
 }: EnemyProps) {
   // References
   const enemyRef = useRef<THREE.Group>(null);
@@ -29,15 +31,41 @@ export default function Enemy({
   const { position: playerPosition, velocity: playerVelocity, takeDamage } = usePlayer();
   const { playHit } = useAudio();
   
-  // Enemy texture
-  const enemyTexture = new THREE.TextureLoader().load(
-    type === 'cat' ? '/textures/cat_enemy.svg' : '/textures/drone.svg'
-  );
+  // Load appropriate enemy texture based on type
+  let texturePath = '/textures/cat_enemy.svg';
+  switch (type) {
+    case 'cat':
+      texturePath = '/textures/cat_enemy.svg';
+      break;
+    case 'drone':
+      texturePath = '/textures/drone.svg';
+      break;
+    case 'frog':
+      texturePath = '/textures/frog_enemy.svg';
+      break;
+    case 'snake':
+      texturePath = '/textures/snake_enemy.svg';
+      break;
+    case 'shark':
+      texturePath = '/textures/shark_enemy.svg';
+      break;
+    case 'fish':
+      texturePath = '/textures/fish_enemy.svg';
+      break;
+    case 'mouse':
+      texturePath = '/textures/mouse_enemy.svg';
+      break;
+    default:
+      texturePath = '/textures/cat_enemy.svg';
+  }
   
-  // Create enemy sprite material
+  const enemyTexture = new THREE.TextureLoader().load(texturePath);
+  enemyTexture.anisotropy = 16;
+  
+  // Create enemy sprite material with appropriate color tint
   const spriteMaterial = new THREE.SpriteMaterial({
     map: enemyTexture,
-    color: type === 'cat' ? 0xffffff : 0x8899ff,
+    color: 0xffffff, // Default white (no tint)
   });
   
   // Handle enemy stunned by bark effect
@@ -87,34 +115,82 @@ export default function Enemy({
       return;
     }
     
-    // If player is nearby and not stunned, chase player
-    if (isPlayerNearby && type === 'cat') {
-      const moveDirection = enemyPos.x < playerPos.x ? 1 : -1;
-      setDirection(moveDirection);
-      
-      // Move towards player
-      enemyPos.x += moveDirection * speed * delta;
-      
-      // Simple hop animation
-      enemyPos.y = 0.5 + Math.abs(Math.sin(frameCount * 0.1)) * 0.3;
-    } 
-    // Drone moves in different pattern - hovering
-    else if (type === 'drone') {
-      // Drones hover and move in patrol area
-      enemyPos.y = 2.5 + Math.sin(frameCount * 0.05) * 0.3;
-      enemyPos.x += direction * speed * 0.5 * delta;
+    // Handle different enemy movements based on type
+    switch (type) {
+      case 'cat':
+        // Cats chase the player if nearby
+        if (isPlayerNearby) {
+          const moveDirection = enemyPos.x < playerPos.x ? 1 : -1;
+          setDirection(moveDirection);
+          
+          // Move towards player
+          enemyPos.x += moveDirection * speed * delta;
+          
+          // Simple hop animation
+          enemyPos.y = 0.5 + Math.abs(Math.sin(frameCount * 0.1)) * 0.3;
+        } else {
+          // Otherwise patrol
+          enemyPos.x += direction * speed * delta;
+          enemyPos.y = 0.5 + Math.abs(Math.sin(frameCount * 0.2)) * 0.1;
+        }
+        break;
+        
+      case 'drone':
+        // Drones hover and move in patrol area
+        enemyPos.y = 2.5 + Math.sin(frameCount * 0.05) * 0.3;
+        enemyPos.x += direction * speed * 0.5 * delta;
+        break;
+        
+      case 'frog':
+        // Frogs hop with big jumps
+        enemyPos.x += direction * speed * delta * (Math.sin(frameCount * 0.05) > 0 ? 2 : 0.2);
+        enemyPos.y = 0.5 + Math.abs(Math.sin(frameCount * 0.05)) * 1;
+        break;
+        
+      case 'snake':
+        // Snakes move in a slithering pattern
+        enemyPos.x += direction * speed * delta;
+        enemyPos.y = 0.3 + Math.sin(frameCount * 0.2) * 0.1;
+        break;
+        
+      case 'shark':
+      case 'fish':
+        // Water enemies move with a swimming pattern
+        if (isWaterEnemy) {
+          // Stay in water area (assume water is below y=0)
+          enemyPos.y = -0.5 + Math.sin(frameCount * 0.1) * 0.3;
+          
+          // Fish move faster but in more erratic patterns
+          if (type === 'fish') {
+            enemyPos.x += direction * speed * 1.5 * delta;
+            // Occasionally change direction randomly
+            if (Math.random() < 0.01) setDirection(direction * -1);
+          } else {
+            // Sharks move more deliberately
+            enemyPos.x += direction * speed * delta;
+          }
+        }
+        break;
+        
+      case 'mouse':
+        // Mice move quickly with small erratic movements
+        enemyPos.x += direction * speed * 1.2 * delta;
+        enemyPos.y = 0.3 + Math.sin(frameCount * 0.3) * 0.05;
+        // Occasionally make small jumps
+        if (Math.random() < 0.005) {
+          enemyPos.y += 0.2;
+        }
+        break;
+        
+      default:
+        // Generic patrol movement for other enemies
+        enemyPos.x += direction * speed * delta;
+        enemyPos.y = 0.5 + Math.abs(Math.sin(frameCount * 0.2)) * 0.1;
     }
-    // Otherwise patrol between bounds
-    else {
-      enemyPos.x += direction * speed * delta;
-      
-      // Simple walking animation
-      enemyPos.y = 0.5 + Math.abs(Math.sin(frameCount * 0.2)) * 0.1;
-      
-      // Change direction at bounds
-      if (enemyPos.x <= patrolArea[0] || enemyPos.x >= patrolArea[1]) {
-        setDirection(direction * -1);
-      }
+    
+    // Change direction at patrol bounds for all enemy types
+    if (enemyPos.x <= patrolArea[0] || enemyPos.x >= patrolArea[1]) {
+      setDirection(direction * -1);
     }
     
     // Collision detection with player for damage (only if not recently damaged)

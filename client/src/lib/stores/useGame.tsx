@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { subscribeWithSelector } from "zustand/middleware";
 
-export type GamePhase = "ready" | "playing" | "ended";
+export type GamePhase = "ready" | "selecting" | "playing" | "ended";
 
 interface GameState {
   phase: GamePhase;
@@ -10,6 +10,7 @@ interface GameState {
   start: () => void;
   restart: () => void;
   end: () => void;
+  setPhase: (phase: GamePhase) => void;
 }
 
 export const useGame = create<GameState>()(
@@ -38,6 +39,11 @@ export const useGame = create<GameState>()(
         }
         return {};
       });
+    },
+    
+    // Add explicit setPhase action
+    setPhase: (phase) => {
+      set({ phase });
     }
   }))
 );
