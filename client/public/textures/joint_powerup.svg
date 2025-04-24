@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Joint body -->
+  <rect x="24" y="12" width="16" height="40" rx="2" fill="#f5f5dc" />
+  
+  <!-- Burning end -->
+  <circle cx="32" cy="12" r="4" fill="#ff4500" />
+  <circle cx="32" cy="12" r="2" fill="#ff8c00" />
+  
+  <!-- Smoke effect -->
+  <path d="M32,8 C28,4 34,2 32,0" fill="none" stroke="#dddddd" stroke-width="2" opacity="0.7" />
+  <path d="M32,8 C36,4 30,2 34,0" fill="none" stroke="#dddddd" stroke-width="2" opacity="0.7" />
+  <path d="M32,8 C30,4 38,2 30,0" fill="none" stroke="#dddddd" stroke-width="2" opacity="0.7" />
+  
+  <!-- Summer vibes symbols -->
+  <circle cx="20" cy="28" r="3" fill="#ffff00" />  <!-- Sun -->
+  <path d="M20,24 L20,20" stroke="#ffff00" stroke-width="1" />
+  <path d="M16,28 L12,28" stroke="#ffff00" stroke-width="1" />
+  <path d="M24,28 L28,28" stroke="#ffff00" stroke-width="1" />
+  <path d="M20,32 L20,36" stroke="#ffff00" stroke-width="1" />
+  
+  <!-- Palm tree -->
+  <rect x="44" y="36" width="2" height="8" fill="#8b4513" />
+  <path d="M45,36 C42,34 38,36 40,32" fill="none" stroke="#008000" stroke-width="1.5" />
+  <path d="M45,36 C48,34 52,36 50,32" fill="none" stroke="#008000" stroke-width="1.5" />
+  <path d="M45,34 C42,32 40,34 42,30" fill="none" stroke="#008000" stroke-width="1.5" />
+  <path d="M45,34 C48,32 50,34 48,30" fill="none" stroke="#008000" stroke-width="1.5" />
+  
+  <!-- Glow effect for invincibility -->
+  <circle cx="32" cy="32" r="30" fill="none" stroke="#ffff00" stroke-width="2" opacity="0.5" stroke-dasharray="4 2" />
+</svg>
