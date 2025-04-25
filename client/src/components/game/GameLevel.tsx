@@ -5,6 +5,7 @@ import Character from "./Character";
 import Enemy from "./Enemy";
 import Platforms from "./Platforms";
 import Collectible from "./Collectible";
+import EnvironmentalHazard from "./EnvironmentalHazard";
 import { usePlayer } from "@/lib/stores/usePlayer";
 import { useLevels } from "@/lib/stores/useLevels";
 import { useCollectibles } from "@/lib/stores/useCollectibles";
@@ -111,6 +112,21 @@ export default function GameLevel() {
           id={`${currentWorld}-${currentLevel}-${index}`}
           position={collectible.position}
           type={collectible.type}
+        />
+      ))}
+      
+      {/* Environmental Hazards */}
+      {levelData.hazards?.map((hazard: any, index: number) => (
+        <EnvironmentalHazard
+          key={`hazard-${index}`}
+          position={hazard.position}
+          type={hazard.type}
+          size={hazard.size}
+          rotation={hazard.rotation}
+          triggerRadius={hazard.triggerRadius}
+          damage={hazard.damage}
+          patrolArea={hazard.patrolArea}
+          patrolSpeed={hazard.patrolSpeed}
         />
       ))}
       
