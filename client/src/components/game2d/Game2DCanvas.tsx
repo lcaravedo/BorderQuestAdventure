@@ -102,9 +102,10 @@ export default function Game2DCanvas() {
     const handleKeyDown = (e: KeyboardEvent) => {
       keysPressed.current.add(e.code);
       
-      // Toggle pause when Enter is pressed
-      if (e.code === 'Enter') {
+      // Toggle pause when Enter or P key is pressed
+      if (e.code === 'Enter' || e.code === 'KeyP') {
         setIsPaused(prevPaused => !prevPaused);
+        console.log("Game paused: ", !isPaused);
         return;
       }
       
@@ -570,13 +571,13 @@ export default function Game2DCanvas() {
     } else {
       // Show pause hint at bottom right
       ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
-      ctx.fillRect(width - 160, height - 40, 150, 30);
+      ctx.fillRect(width - 200, height - 40, 190, 30);
       
       ctx.fillStyle = '#FFFFFF';
       ctx.font = '10px "Press Start 2P", monospace';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillText('ENTER to pause', width - 85, height - 25);
+      ctx.fillText('ENTER or P to pause', width - 105, height - 25);
     }
   };
 
