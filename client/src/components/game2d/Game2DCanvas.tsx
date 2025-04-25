@@ -767,19 +767,19 @@ export default function Game2DCanvas() {
             // Collect the item
             if (obstacle.type === 'bone') {
               // Collect bone
-              collectItem(collectibleId, 'bone');
+              handleCollectItem(collectibleId, 'bone');
               playSuccess();
             } else if (obstacle.type === 'visa') {
               // Collect visa
-              collectItem(collectibleId, 'visa');
+              handleCollectItem(collectibleId, 'visa');
               playSuccess();
             } else if (obstacle.type === 'snack') {
               // Heal player
-              heal(1); // Heal 1 health point
+              handleHeal(1); // Heal 1 health point
               playSuccess();
             } else if (obstacle.type === 'mushroom') {
               // Transform into chihuahua
-              powerUp(30000); // 30 second powerup
+              handlePowerUp(30000); // 30 second powerup
               playSuccess();
             } else if (obstacle.type === 'joint') {
               // Temporary invincibility
@@ -807,7 +807,7 @@ export default function Game2DCanvas() {
             playerVelRef.current.x = playerPosRef.current.x < enemy.x ? -5 : 5; // Bounce away
             
             // Deal damage to player
-            takeDamage(1);
+            handleTakeDamage(1);
             
             // Play hit sound
             playHit();
@@ -866,7 +866,21 @@ export default function Game2DCanvas() {
       }
       gameInitializedRef.current = false;
     };
-  }, [levelData, width, height, phase, setPosition, playSuccess]);
+  }, [
+    levelData, 
+    width, 
+    height, 
+    phase, 
+    setPosition, 
+    playSuccess, 
+    playHit,
+    takeDamage, 
+    heal, 
+    powerUp, 
+    collectItem,
+    currentWorld,
+    isInvincible
+  ]);
   
   // If level data isn't loaded yet, show loading state
   if (!levelData) {
