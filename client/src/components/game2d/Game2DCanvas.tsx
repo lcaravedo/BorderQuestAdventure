@@ -53,8 +53,21 @@ export default function Game2DCanvas() {
   // Camera and level state
   const cameraOffsetRef = useRef({ x: 0, y: 0 });
   const levelProgressRef = useRef(0);
-  const obstaclesRef = useRef<Array<{ type: string; x: number; y: number; width: number; height: number; }>>([]);
-  const enemiesRef = useRef<Array<{ type: string; x: number; y: number; direction: number; speed: number; }>>([]);
+  const obstaclesRef = useRef<Array<{ 
+    type: string; 
+    x: number; 
+    y: number; 
+    width: number; 
+    height: number;
+    color?: string; // Optional color property for platforms
+  }>>([]);
+  const enemiesRef = useRef<Array<{ 
+    type: string; 
+    x: number; 
+    y: number; 
+    direction: number; 
+    speed: number; 
+  }>>([]);
   
   // Game resources
   const textures = useRef<Record<string, HTMLImageElement>>({});
@@ -279,6 +292,78 @@ export default function Game2DCanvas() {
     };
   }, []);
   
+  // Function to draw the game over screen
+  const drawGameOverScreen = (ctx: CanvasRenderingContext2D) => {
+    // Fill the screen with a semi-transparent black overlay
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+    ctx.fillRect(0, 0, width, height);
+    
+    // Draw "GAME OVER" text
+    ctx.fillStyle = '#FF3333';
+    ctx.font = '48px "Press Start 2P", monospace';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('GAME OVER', width / 2, height / 2 - 50);
+    
+    // Draw "Press SPACE to restart" text
+    ctx.fillStyle = '#FFFFFF';
+    ctx.font = '20px "Press Start 2P", monospace';
+    ctx.fillText('Press SPACE to restart', width / 2, height / 2 + 50);
+    
+    // If space is pressed, reset the game
+    if (keysPressed.current.has('Space')) {
+      resetGame();
+      
+      // Clear the keys pressed
+      keysPressed.current.clear();
+    }
+  };
+  
+  // Function to draw the UI (health, lives)
+  const drawUI = (ctx: CanvasRenderingContext2D) => {
+    // Draw background for UI
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+    ctx.fillRect(10, 10, 200, 60);
+    
+    // Draw health bar
+    ctx.fillStyle = '#666666';
+    ctx.fillRect(20, 20, 150, 15);
+    
+    // Draw current health
+    ctx.fillStyle = '#FF3333';
+    const healthWidth = (health / maxHealth) * 150;
+    ctx.fillRect(20, 20, healthWidth, 15);
+    
+    // Draw health text
+    ctx.fillStyle = '#FFFFFF';
+    ctx.font = '12px "Press Start 2P", monospace';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'top';
+    ctx.fillText(`HP: ${health}/${maxHealth}`, 25, 22);
+    
+    // Draw lives (hearts)
+    for (let i = 0; i < hearts; i++) {
+      ctx.fillStyle = i < hearts ? '#FF3333' : '#666666';
+      // Draw heart shape
+      ctx.beginPath();
+      const heartX = 20 + (i * 30);
+      const heartY = 45;
+      
+      // Heart shape using bezier curves
+      ctx.moveTo(heartX, heartY + 5);
+      ctx.bezierCurveTo(heartX, heartY + 3, heartX - 5, heartY - 2, heartX - 10, heartY + 5);
+      ctx.bezierCurveTo(heartX - 15, heartY + 10, heartX - 5, heartY + 15, heartX, heartY + 12);
+      ctx.bezierCurveTo(heartX + 5, heartY + 15, heartX + 15, heartY + 10, heartX + 10, heartY + 5);
+      ctx.bezierCurveTo(heartX + 5, heartY - 2, heartX, heartY + 3, heartX, heartY + 5);
+      ctx.fill();
+    }
+    
+    // Draw lives text
+    ctx.fillStyle = '#FFFFFF';
+    ctx.font = '12px "Press Start 2P", monospace';
+    ctx.fillText(`Lives: ${hearts}`, 110, 45);
+  };
+
   // Main game rendering and update loop
   useEffect(() => {
     if (!canvasRef.current || !levelData || phase !== 'playing') return;
@@ -864,6 +949,9 @@ export default function Game2DCanvas() {
         );
       }
       
+      // Draw UI elements (health bar, lives)
+      drawUI(ctx);
+      
       // Request next frame
       animationFrameIdRef.current = requestAnimationFrame(gameLoop);
     };
@@ -892,7 +980,12 @@ export default function Game2DCanvas() {
     powerUp, 
     collectItem,
     currentWorld,
-    isInvincible
+    isInvincible,
+    health,
+    maxHealth,
+    hearts,
+    isGameOver,
+    resetGame
   ]);
   
   // If level data isn't loaded yet, show loading state
