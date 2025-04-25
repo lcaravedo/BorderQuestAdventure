@@ -55,8 +55,16 @@ export default function Game2DCanvas() {
         setIsPaused(prev => !prev);
       }
       
+      // Jump with Space (also debug log)
+      if (e.code === 'Space' && isGroundedRef.current && phase === 'playing') {
+        console.log("Jump triggered!");
+        playerVelRef.current.y = -JUMP_FORCE;
+        isGroundedRef.current = false;
+      }
+      
       // Attack with 'KeyM'
-      if (e.code === 'KeyM' && !attackCooldownRef.current) {
+      if (e.code === 'KeyM' && !attackCooldownRef.current && phase === 'playing') {
+        console.log("Attack triggered!");
         isAttackingRef.current = true;
         attackCooldownRef.current = true;
         
