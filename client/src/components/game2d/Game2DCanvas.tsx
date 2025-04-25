@@ -434,11 +434,11 @@ export default function Game2DCanvas() {
     }
   };
   
-  // Function to draw the UI (health, lives)
+  // Function to draw the UI (health, lives, score)
   const drawUI = (ctx: CanvasRenderingContext2D) => {
     // Draw background for UI
     ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
-    ctx.fillRect(10, 10, 200, 60);
+    ctx.fillRect(10, 10, 200, 80); // Made taller to include score
     
     // Draw health bar
     ctx.fillStyle = '#666666';
@@ -477,6 +477,11 @@ export default function Game2DCanvas() {
     ctx.fillStyle = '#FFFFFF';
     ctx.font = '12px "Press Start 2P", monospace';
     ctx.fillText(`Lives: ${hearts}`, 110, 45);
+    
+    // Draw score
+    ctx.fillStyle = '#FFFFFF';
+    ctx.font = '12px "Press Start 2P", monospace';
+    ctx.fillText(`Score: ${score}`, 20, 70);
   };
 
   // Main game rendering and update loop
@@ -947,7 +952,7 @@ export default function Game2DCanvas() {
       });
       
       // Draw dynamic enemies (with camera offset)
-      enemiesRef.current.forEach((enemy) => {
+      enemiesRef.current.forEach((enemy, enemyIndex) => {
         const enemyX = enemy.x - cameraX;
         
         // Skip if enemy is off-screen
@@ -965,7 +970,85 @@ export default function Game2DCanvas() {
           enemy.direction *= -1;
         }
         
-        // Draw enemy
+        // Handle enemy shooting if they have a shootCooldown
+        if (enemy.shootCooldown !== undefined) {
+          // Decrease cooldown
+          if (enemy.shootCooldown > 0) {
+            enemy.shootCooldown -= deltaTime * 16; // Convert to milliseconds
+          } else {
+            // Get distance and direction to player
+            const distX = playerPosRef.current.x - enemy.x;
+            const distY = playerPosRef.current.y - enemy.y;
+            const dist = Math.sqrt(distX * distX + distY * distY);
+            
+            // Only shoot if player is within range (800px)
+            if (dist < 800) {
+              // Create new projectile
+              const projectileSpeed = 5;
+              const angle = Math.atan2(distY, distX);
+              
+              projectilesRef.current.push({
+                x: enemy.x,
+                y: enemy.y,
+                velocityX: Math.cos(angle) * projectileSpeed,
+                velocityY: Math.sin(angle) * projectileSpeed,
+                fromEnemy: true
+              });
+              
+              // Play sound
+              playHit();
+              
+              // Reset cooldown based on enemy type
+              if (enemy.isBoss) {
+                enemy.shootCooldown = 2000 + Math.random() * 1000; // Bosses shoot more often
+              } else if (enemy.type === 'cat') {
+                enemy.shootCooldown = 3000 + Math.random() * 2000;
+              } else if (enemy.type === 'crow') {
+                enemy.shootCooldown = 4000 + Math.random() * 3000;
+              } else if (enemy.type === 'snake') {
+                enemy.shootCooldown = 5000 + Math.random() * 2000;
+              } else {
+                enemy.shootCooldown = 4000 + Math.random() * 3000; // Default
+              }
+            }
+          }
+        }
+        
+        // Draw enemy - size depends on if it's a boss or not
+        const size = enemy.isBoss ? 80 : 40;
+        const halfSize = size / 2;
+        
+        // Get appropriate enemy color based on type
+        let enemyColor;
+        if (enemy.type === 'cat') {
+          enemyColor = '#FF7700'; // Orange
+        } else if (enemy.type === 'crow') {
+          enemyColor = '#222222'; // Dark grey
+        } else if (enemy.type === 'frog') {
+          enemyColor = '#33AA33'; // Green
+        } else if (enemy.type === 'mouse') {
+          enemyColor = '#AAAAAA'; // Grey
+        } else if (enemy.type === 'snake') {
+          enemyColor = '#66AA66'; // Green-yellow
+        } else if (enemy.type.startsWith('mutant_')) {
+          // Boss colors are more vibrant
+          if (enemy.type === 'mutant_mouse') {
+            enemyColor = '#FF55FF'; // Bright pink
+          } else if (enemy.type === 'mutant_cat') {
+            enemyColor = '#FF5500'; // Bright orange
+          } else if (enemy.type === 'mutant_crow') {
+            enemyColor = '#555599'; // Dark blue
+          } else if (enemy.type === 'mutant_frog') {
+            enemyColor = '#55FF55'; // Bright green
+          } else if (enemy.type === 'mutant_snake') {
+            enemyColor = '#AAFF00'; // Bright yellow-green
+          } else {
+            enemyColor = '#FF00FF'; // Default bright magenta
+          }
+        } else {
+          enemyColor = '#FF0000'; // Default red
+        }
+        
         const texture = textures.current[enemy.type] || null;
         if (texture) {
           // Flip texture based on direction
@@ -975,25 +1058,139 @@ export default function Game2DCanvas() {
             ctx.scale(-1, 1);
             ctx.drawImage(
               texture,
-              enemyX - 20,
-              enemy.y - 20,
-              40,
-              40
+              enemyX - halfSize,
+              enemy.y - halfSize,
+              size,
+              size
             );
           } else {
             ctx.drawImage(
               texture,
-              enemyX - 20,
-              enemy.y - 20,
-              40,
-              40
+              enemyX - halfSize,
+              enemy.y - halfSize,
+              size,
+              size
             );
           }
           ctx.restore();
         } else {
           // Fallback if texture isn't loaded
-          ctx.fillStyle = '#FF0000';
-          ctx.fillRect(enemyX - 20, enemy.y - 20, 40, 40);
+          ctx.fillStyle = enemyColor;
+          ctx.fillRect(enemyX - halfSize, enemy.y - halfSize, size, size);
+          
+          // Draw eyes and mouth for better visibility
+          ctx.fillStyle = '#FFFFFF';
+          ctx.beginPath();
+          ctx.arc(enemyX - halfSize/2, enemy.y - halfSize/2, size/8, 0, Math.PI * 2);
+          ctx.arc(enemyX + halfSize/2, enemy.y - halfSize/2, size/8, 0, Math.PI * 2);
+          ctx.fill();
+          
+          // Draw mouth
+          ctx.strokeStyle = '#FFFFFF';
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.arc(enemyX, enemy.y + halfSize/4, size/6, 0, Math.PI);
+          ctx.stroke();
+          
+          // For bosses, draw a crown
+          if (enemy.isBoss) {
+            ctx.fillStyle = '#FFDD00'; // Gold
+            ctx.beginPath();
+            ctx.moveTo(enemyX - halfSize/2, enemy.y - halfSize);
+            ctx.lineTo(enemyX, enemy.y - halfSize - halfSize/2);
+            ctx.lineTo(enemyX + halfSize/2, enemy.y - halfSize);
+            ctx.fill();
+          }
+        }
+        
+        // Draw health bar above enemy
+        const healthBarWidth = size;
+        const healthBarHeight = 5;
+        const healthPercent = enemy.health / (enemy.isBoss ? 10 : 3);
+        
+        // Health bar background
+        ctx.fillStyle = '#000000';
+        ctx.fillRect(
+          enemyX - healthBarWidth/2, 
+          enemy.y - halfSize - 10, 
+          healthBarWidth, 
+          healthBarHeight
+        );
+        
+        // Health bar fill
+        ctx.fillStyle = '#FF0000';
+        ctx.fillRect(
+          enemyX - healthBarWidth/2, 
+          enemy.y - halfSize - 10, 
+          healthBarWidth * healthPercent, 
+          healthBarHeight
+        );
+      });
+      
+      // Draw and update projectiles
+      projectilesRef.current.forEach((projectile, index) => {
+        // Move projectile
+        projectile.x += projectile.velocityX * deltaTime;
+        projectile.y += projectile.velocityY * deltaTime;
+        
+        // Calculate screen position
+        const projectileX = projectile.x - cameraX;
+        const projectileY = projectile.y;
+        
+        // Remove projectile if off-screen
+        if (
+          projectileX < -50 || 
+          projectileX > width + 50 || 
+          projectileY < -50 || 
+          projectileY > height + 50
+        ) {
+          projectilesRef.current.splice(index, 1);
+          return;
+        }
+        
+        // Draw projectile
+        ctx.fillStyle = projectile.fromEnemy ? '#FF0000' : '#00FF00';
+        ctx.beginPath();
+        ctx.arc(projectileX, projectileY, 5, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Add a trail effect
+        ctx.globalAlpha = 0.5;
+        ctx.beginPath();
+        ctx.arc(
+          projectileX - projectile.velocityX, 
+          projectileY - projectile.velocityY, 
+          3, 
+          0, 
+          Math.PI * 2
+        );
+        ctx.fill();
+        ctx.globalAlpha = 1.0;
+        
+        // Check for collision with player if projectile is from enemy
+        if (projectile.fromEnemy && !isInvincible) {
+          const playerHitboxRadius = 15;
+          const dist = Math.sqrt(
+            Math.pow(playerPosRef.current.x - projectile.x, 2) + 
+            Math.pow(playerPosRef.current.y - projectile.y, 2)
+          );
+          
+          if (dist < playerHitboxRadius + 5) { // 5 is projectile radius
+            // Player hit by projectile
+            handleTakeDamage(1);
+            playHit();
+            
+            // Remove projectile
+            projectilesRef.current.splice(index, 1);
+            
+            // Make player invincible briefly
+            setIsInvincible(true);
+            setTimeout(() => setIsInvincible(false), 1000);
+            
+            // Apply knockback
+            playerVelRef.current.x = projectile.velocityX * 0.5;
+            playerVelRef.current.y = -5; // Bounce up slightly
+          }
         }
       });
       
@@ -1036,10 +1233,12 @@ export default function Game2DCanvas() {
       // Check for enemies hit by sword attack
       if (swordHitboxRef.current.active) {
         enemiesRef.current.forEach((enemy, index) => {
-          const enemyLeft = enemy.x - 20;
-          const enemyRight = enemy.x + 20;
-          const enemyTop = enemy.y - 20;
-          const enemyBottom = enemy.y + 20;
+          // Adjust hitbox based on enemy size (bosses are bigger)
+          const enemySize = enemy.isBoss ? 40 : 20;
+          const enemyLeft = enemy.x - enemySize;
+          const enemyRight = enemy.x + enemySize;
+          const enemyTop = enemy.y - enemySize;
+          const enemyBottom = enemy.y + enemySize;
           
           const swordLeft = swordHitboxRef.current.x - swordHitboxRef.current.width / 2;
           const swordRight = swordHitboxRef.current.x + swordHitboxRef.current.width / 2;
@@ -1053,12 +1252,83 @@ export default function Game2DCanvas() {
             swordBottom > enemyTop &&
             swordTop < enemyBottom
           ) {
-            // Remove enemy (could also implement a health system instead)
-            enemiesRef.current.splice(index, 1);
-            playSuccess();
+            // Damage enemy by 1
+            enemy.health--;
+            
+            // Check if enemy is defeated
+            if (enemy.health <= 0) {
+              // Add score - 50 points for regular enemies, 200 for bosses
+              const pointsEarned = enemy.isBoss ? 200 : 50;
+              setScore(prevScore => prevScore + pointsEarned);
+              console.log(`Enemy defeated! +${pointsEarned} points! Score: ${score + pointsEarned}`);
+              
+              // Remove enemy
+              enemiesRef.current.splice(index, 1);
+              
+              // Play success sound
+              playSuccess();
+            } else {
+              // Enemy was hit but not defeated
+              playHit();
+              
+              // Knockback effect
+              enemy.x += (enemy.x < playerPosRef.current.x) ? -20 : 20;
+            }
+            
+            // Disable sword hitbox to prevent multiple hits from the same swing
+            swordHitboxRef.current.active = false;
           }
         });
       }
+      
+      // Check for jumping on top of enemies (Mario-style)
+      enemiesRef.current.forEach((enemy, index) => {
+        // Only check if player is moving downward (falling onto enemy)
+        if (playerVelRef.current.y > 0) {
+          const enemySize = enemy.isBoss ? 40 : 20;
+          const enemyLeft = enemy.x - enemySize;
+          const enemyRight = enemy.x + enemySize;
+          // Only check the top part of the enemy for jumping on
+          const enemyTop = enemy.y - enemySize;
+          const enemyTopBottom = enemy.y - enemySize/2;
+          
+          const playerLeft = playerPosRef.current.x - playerSizeRef.current.width/3;
+          const playerRight = playerPosRef.current.x + playerSizeRef.current.width/3;
+          const playerBottom = playerPosRef.current.y + playerSizeRef.current.height/2;
+          
+          // Check if player's feet are hitting enemy's head
+          if (
+            playerBottom >= enemyTop && 
+            playerBottom <= enemyTopBottom &&
+            playerRight >= enemyLeft && 
+            playerLeft <= enemyRight
+          ) {
+            // Damage enemy by 1
+            enemy.health--;
+            
+            // Check if enemy is defeated
+            if (enemy.health <= 0) {
+              // Add score - 50 points for regular enemies, 200 for bosses
+              const pointsEarned = enemy.isBoss ? 200 : 50;
+              setScore(prevScore => prevScore + pointsEarned);
+              console.log(`Enemy defeated! +${pointsEarned} points! Score: ${score + pointsEarned}`);
+              
+              // Remove enemy
+              enemiesRef.current.splice(index, 1);
+              
+              // Play success sound
+              playSuccess();
+            } else {
+              // Enemy was hit but not defeated
+              playHit();
+            }
+            
+            // Bounce player up
+            playerVelRef.current.y = -JUMP_FORCE * 0.7;
+            isGroundedRef.current = false;
+          }
+        }
+      });
       
       // Check for hitting hidden blocks with the character's head (jumping into them)
       obstaclesRef.current.forEach((obstacle, index) => {
@@ -1096,8 +1366,9 @@ export default function Game2DCanvas() {
               if (obstacle.content?.startsWith('coin')) {
                 // Add points based on coin value
                 const coinValue = parseInt(obstacle.content.replace('coin', ''));
-                // Here you would add score
-                console.log(`Collected ${coinValue} coins!`);
+                // Add points to score
+                setScore(prevScore => prevScore + coinValue);
+                console.log(`Collected ${coinValue} coins! Score: ${score + coinValue}`);
               } else if (obstacle.content === 'mushroom') {
                 // Power up the player
                 handlePowerUp(30000); // 30 seconds powerup
@@ -1194,6 +1465,10 @@ export default function Game2DCanvas() {
       if (distanceToExit < 30 && distanceToExitY < 100) {
         // Player reached the exit/border
         playSuccess();
+        
+        // Add 100 points for completing the level
+        setScore(prevScore => prevScore + 100);
+        console.log("Level complete! +100 points! Score: " + (score + 100));
         
         // Unlock the next level
         unlockNextLevel();
