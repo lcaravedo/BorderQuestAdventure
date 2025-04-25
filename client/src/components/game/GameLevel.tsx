@@ -19,9 +19,11 @@ export default function GameLevel() {
   const { resetCollectibles } = useCollectibles();
   const [levelData, setLevelData] = useState<any>(null);
   
-  // Pixel effect
+  // Pixel effect - temporarily disabled to fix error
   useEffect(() => {
-    return PixelShader(scene, { pixelSize: 4 });
+    console.log("Skipping pixel shader for now to test the game");
+    // We'll add this back later once we resolve the import issue
+    return () => {};
   }, [scene]);
   
   // Load level data when level changes
