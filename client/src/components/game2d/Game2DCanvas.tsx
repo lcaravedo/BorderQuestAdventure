@@ -713,15 +713,33 @@ export default function Game2DCanvas() {
       const fenceX = exit[0] - cameraX;
       const fenceY = exit[1] - 100; // Position at ground level but taller
       
-      // Draw fence posts
-      ctx.fillStyle = '#888888';
-      ctx.fillRect(fenceX - 5, fenceY, 10, 100);
-      ctx.fillRect(fenceX - 5 + 50, fenceY, 10, 100);
+      // Draw a more detailed border checkpoint
+      // Main metal structure
+      ctx.fillStyle = '#AAAAAA'; // Metal color
+      ctx.fillRect(fenceX - 10, fenceY, 70, 120);
       
-      // Draw horizontal bars
-      ctx.fillRect(fenceX, fenceY + 20, 45, 5);
-      ctx.fillRect(fenceX, fenceY + 50, 45, 5);
-      ctx.fillRect(fenceX, fenceY + 80, 45, 5);
+      // Border crossing design
+      ctx.fillStyle = '#EE0000'; // Red top
+      ctx.fillRect(fenceX - 10, fenceY, 70, 10);
+      
+      // White stripes
+      ctx.fillStyle = '#FFFFFF';
+      ctx.fillRect(fenceX - 10, fenceY + 15, 70, 5);
+      ctx.fillRect(fenceX - 10, fenceY + 25, 70, 5);
+      ctx.fillRect(fenceX - 10, fenceY + 35, 70, 5);
+      
+      // Welcome sign
+      ctx.fillStyle = '#FFDD00'; // Gold border
+      ctx.fillRect(fenceX - 5, fenceY + 50, 60, 40);
+      ctx.fillStyle = '#FFFFFF'; // White background
+      ctx.fillRect(fenceX, fenceY + 55, 50, 30);
+      
+      // Sign text
+      ctx.fillStyle = '#000000';
+      ctx.font = '10px "Press Start 2P", monospace';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('USA', fenceX + 25, fenceY + 70);
       
       // Draw "BORDER" text
       ctx.fillStyle = '#FFFFFF';
@@ -850,7 +868,7 @@ export default function Game2DCanvas() {
                 ctx.arc(obstacleX - 5, contentY - 10, 3, 0, Math.PI * 2);
                 ctx.arc(obstacleX + 5, contentY - 7, 3, 0, Math.PI * 2);
                 ctx.fill();
-              } else if (obstacle.content === 'joint') {
+              } else if (obstacle.content && obstacle.content === 'joint') {
                 // Draw joint
                 ctx.fillStyle = '#DDCC88'; // Light brown
                 ctx.fillRect(obstacleX - 15, contentY - 5, 30, 10);
@@ -860,7 +878,7 @@ export default function Game2DCanvas() {
                 ctx.beginPath();
                 ctx.arc(obstacleX + 15, contentY, 5, 0, Math.PI * 2);
                 ctx.fill();
-              } else if (obstacle.content.startsWith('coin')) {
+              } else if (obstacle.content && obstacle.content.startsWith('coin')) {
                 // Draw coin 
                 ctx.fillStyle = '#FFDD00'; // Gold
                 ctx.beginPath();
@@ -868,7 +886,7 @@ export default function Game2DCanvas() {
                 ctx.fill();
                 
                 // Draw coin value
-                const coinValue = obstacle.content.replace('coin', '');
+                const coinValue = obstacle.content ? obstacle.content.replace('coin', '') : '';
                 ctx.fillStyle = '#000000';
                 ctx.font = '10px "Press Start 2P", monospace';
                 ctx.textAlign = 'center';
@@ -1817,6 +1835,37 @@ export default function Game2DCanvas() {
         playerPosRef.current.y = height - 70;
         playerVelRef.current.y = 0;
         isGroundedRef.current = true;
+      }
+      
+      // Check if player has fallen into a pit (way below the screen)
+      if (playerPosRef.current.y > height + 100) {
+        console.log("Player fell into a pit!");
+        
+        // Lose a life (take full health damage to lose one life)
+        handleTakeDamage(maxHealth);
+        
+        // Play hit sound
+        playHit();
+        
+        // Respawn at last checkpoint or level start
+        if (lastCheckpointRef.current) {
+          playerPosRef.current.x = lastCheckpointRef.current.x;
+          playerPosRef.current.y = lastCheckpointRef.current.y;
+        } else {
+          // No checkpoint reached, respawn at beginning
+          playerPosRef.current.x = 100;
+          playerPosRef.current.y = height - 100;
+        }
+        
+        // Reset velocity
+        playerVelRef.current.x = 0;
+        playerVelRef.current.y = 0;
+        
+        // Set temporary invincibility to prevent chain deaths
+        setIsInvincible(true);
+        setTimeout(() => {
+          setIsInvincible(false);
+        }, 2000);
       }
       
       // Simple platform collision
