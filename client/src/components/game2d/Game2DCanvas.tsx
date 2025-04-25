@@ -131,6 +131,9 @@ export default function Game2DCanvas() {
   const projectilesRef = useRef<Array<any>>([]);
   const swordHitboxRef = useRef({ x: 0, y: 0, width: 0, height: 0, active: false });
   
+  // Power-up timer ref (needs to be at component level, not inside hooks)
+  const powerUpTimerRef = useRef<number | null>(null);
+  
   // Game resources
   const textures = useRef<Record<string, HTMLImageElement>>({});
   
@@ -181,7 +184,10 @@ export default function Game2DCanvas() {
   // Setup powerup timer effect
   useEffect(() => {
     // Clear existing timer when component unmounts or re-renders
-    const powerUpTimerRef = useRef<number | null>(null);
+    if (powerUpTimerRef.current) {
+      clearTimeout(powerUpTimerRef.current);
+      powerUpTimerRef.current = null;
+    }
     
     if (isPoweredUp && powerUpTimeRemaining > 0) {
       powerUpTimerRef.current = window.setTimeout(() => {
