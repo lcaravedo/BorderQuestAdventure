@@ -6,6 +6,7 @@ import LevelSelect from "./components/ui/level-select";
 import GameUI from "./components/ui/game-ui";
 import SoundManager from "./components/game/SoundManager";
 import Game2DCanvas from "./components/game2d/Game2DCanvas";
+import PauseControl from "./components/game2d/PauseControl";
 import { Controls } from "./lib/consts";
 import "@fontsource/inter";
 

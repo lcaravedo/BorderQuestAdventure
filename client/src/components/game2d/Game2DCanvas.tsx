@@ -102,10 +102,11 @@ export default function Game2DCanvas() {
     const handleKeyDown = (e: KeyboardEvent) => {
       keysPressed.current.add(e.code);
       
-      // Toggle pause when Enter or P key is pressed
+      // We now use the PauseControl component for pause functionality
+      // This is kept for backward compatibility
       if (e.code === 'Enter' || e.code === 'KeyP') {
         setIsPaused(prevPaused => !prevPaused);
-        console.log("Game paused: ", !isPaused);
+        console.log("Game paused via canvas: ", !isPaused);
         return;
       }
       
@@ -1801,19 +1802,37 @@ export default function Game2DCanvas() {
       const distanceToExitY = Math.abs(playerPosRef.current.y - exit[1]);
       
       if (distanceToExit < 30 && distanceToExitY < 100) {
-        // Player reached the exit/border
-        playSuccess();
+        // Check if this is level 4 (fifth level with boss) and if the boss is still alive
+        const isBossLevel = currentLevel === 4;
+        const bossExists = enemiesRef.current.some(enemy => enemy.isBoss);
         
-        // Add 100 points for completing the level
-        setScore(prevScore => prevScore + 100);
-        console.log("Level complete! +100 points! Score: " + (score + 100));
-        
-        // Unlock the next level
-        unlockNextLevel();
-        
-        // Determine next level
-        let nextLevel = currentLevel;
-        let nextWorld = currentWorld;
+        if (isBossLevel && bossExists) {
+          // Boss is still alive, don't allow crossing the border
+          // Push player back
+          playerPosRef.current.x -= 100;
+          
+          // Show a warning message
+          ctx.fillStyle = 'rgba(255, 0, 0, 0.7)';
+          ctx.fillRect(width/2 - 150, height/2 - 40, 300, 80);
+          ctx.fillStyle = '#FFFFFF';
+          ctx.font = '16px "Press Start 2P", monospace';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText('Defeat the boss first!', width/2, height/2);
+        } else {
+          // Player reached the exit/border
+          playSuccess();
+          
+          // Add 100 points for completing the level
+          setScore(prevScore => prevScore + 100);
+          console.log("Level complete! +100 points! Score: " + (score + 100));
+          
+          // Unlock the next level
+          unlockNextLevel();
+          
+          // Determine next level
+          let nextLevel = currentLevel;
+          let nextWorld = currentWorld;
         
         if (currentLevel < 4) { // If not the last level in the world
           nextLevel = currentLevel + 1;
@@ -2163,7 +2182,6 @@ export default function Game2DCanvas() {
     maxHealth,
     hearts,
     isGameOver,
-    resetGame
   ]);
   
   // If level data isn't loaded yet, show loading state
