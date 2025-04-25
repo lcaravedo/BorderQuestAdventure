@@ -29,6 +29,7 @@ interface PlayerState {
   isDashing: boolean;
   isBarking: boolean;
   isDigging: boolean;
+  isGameOver: boolean;
   
   // Functions
   updatePosition: (newPosition: [number, number, number]) => void;
@@ -38,6 +39,7 @@ interface PlayerState {
   takeDamage: (amount: number) => void;
   heal: (amount: number) => void;
   resetPlayer: () => void;
+  resetGame: () => void; // Reset the entire game after game over
   setPlayerSpawn: (position: [number, number, number]) => void;
   upgradeAbility: (ability: 'bark' | 'dig' | 'dash') => void;
   setHidden: (hidden: boolean) => void;
@@ -65,7 +67,7 @@ export const usePlayer = create<PlayerState>()(
     // Stats
     health: 3,
     maxHealth: 3,
-    hearts: 3,  // Start with 3 hearts
+    hearts: 5,  // Start with 5 lives
     stamina: 100,
     maxStamina: 100,
     
@@ -83,6 +85,7 @@ export const usePlayer = create<PlayerState>()(
     isDashing: false,
     isBarking: false,
     isDigging: false,
+    isGameOver: false,
     
     // Update player position
     updatePosition: (newPosition) => set({ position: newPosition }),
@@ -148,11 +151,34 @@ export const usePlayer = create<PlayerState>()(
       const newHealth = Math.max(0, state.health - amount);
       
       // If health reaches 0, reduce hearts by 1 and reset health if hearts remain
-      if (newHealth === 0 && state.hearts > 1) {
-        return {
-          hearts: state.hearts - 1,
-          health: state.maxHealth
-        };
+      if (newHealth === 0) {
+        if (state.hearts > 1) {
+          // Player loses a life but can continue
+          return {
+            hearts: state.hearts - 1,
+            health: state.maxHealth
+          };
+        } else {
+          // Game over - out of lives
+          // Reset everything including hearts
+          return {
+            health: 3,
+            maxHealth: 3,
+            hearts: 5,
+            position: [0, 1, 0],
+            velocity: [0, 0, 0, 0],
+            isGrounded: false,
+            stamina: 100,
+            isHidden: false,
+            isDashing: false,
+            isBarking: false,
+            isDigging: false,
+            isPoweredUp: false,
+            powerUpTimeRemaining: 0,
+            // This is game over!
+            isGameOver: true
+          };
+        }
       }
       
       return { health: newHealth };
@@ -163,12 +189,12 @@ export const usePlayer = create<PlayerState>()(
       health: Math.min(state.maxHealth, state.health + amount)
     })),
     
-    // Reset player to default state
-    resetPlayer: () => set({
+    // Reset player to default state but maintain hearts (lives)
+    resetPlayer: () => set((state) => ({
       position: [0, 1, 0],
       velocity: [0, 0, 0, 0],
       isGrounded: false,
-      health: 3,
+      health: state.maxHealth, // Reset health to full
       stamina: 100,
       isHidden: false,
       isDashing: false,
@@ -176,6 +202,37 @@ export const usePlayer = create<PlayerState>()(
       isDigging: false,
       isPoweredUp: false,
       powerUpTimeRemaining: 0
+    })),
+    
+    // Reset the entire game after game over
+    resetGame: () => set({
+      // Default values
+      position: [0, 1, 0],
+      velocity: [0, 0, 0, 0],
+      isGrounded: false,
+      
+      // Stats
+      health: 3,
+      maxHealth: 3,
+      hearts: 5,  // Reset to 5 lives
+      stamina: 100,
+      maxStamina: 100,
+      
+      // Appearance and powerups
+      isPoweredUp: false,
+      powerUpTimeRemaining: 0,
+      
+      // Abilities
+      barkPower: 1,
+      digLevel: 1,
+      dashLevel: 1,
+      
+      // Status
+      isHidden: false,
+      isDashing: false,
+      isBarking: false,
+      isDigging: false,
+      isGameOver: false // Clear game over state
     }),
     
     // Set player spawn position
