@@ -18,14 +18,18 @@ export default function Game2DCanvas() {
   const { phase } = useGame();
   const { currentWorld, currentLevel } = useLevels();
   const { 
-    resetPlayer, 
+    resetPlayer,
+    resetGame, 
     position, 
     setPosition, 
     takeDamage, 
     heal, 
     powerUp, 
     health,
-    isPoweredUp
+    hearts,
+    maxHealth,
+    isPoweredUp,
+    isGameOver
   } = usePlayer();
   const { resetCollectibles, collectItem } = useCollectibles();
   const { playHit, playSuccess } = useAudio();
@@ -309,6 +313,15 @@ export default function Game2DCanvas() {
       if (!lastTimeRef.current) lastTimeRef.current = timestamp;
       const deltaTime = (timestamp - lastTimeRef.current) / 16; // Normalize to ~60fps
       lastTimeRef.current = timestamp;
+      
+      // Check for game over state
+      if (isGameOver) {
+        // Draw game over screen
+        drawGameOverScreen(ctx);
+        // Continue the animation loop
+        animationFrameIdRef.current = requestAnimationFrame(gameLoop);
+        return;
+      }
       
       // Clear the canvas
       ctx.clearRect(0, 0, width, height);
