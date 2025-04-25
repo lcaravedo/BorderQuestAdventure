@@ -22,8 +22,8 @@ if (rootElement) {
 
 try {
   console.log("Game initialization started...");
-  // Change this to TestPage for testing basic React functionality
-  createRoot(document.getElementById("root")!).render(<TestPage />);
+  // Now that we know basic React works, let's try the real game with error tracing
+  createRoot(document.getElementById("root")!).render(<App />);
   console.log("React rendering completed!");
 } catch (error) {
   console.error("Error initializing the game:", error);
