@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { usePlayer } from "@/lib/stores/usePlayer";
@@ -15,18 +15,14 @@ export default function Collectible({ id, position, type }: CollectibleProps) {
   const collectibleRef = useRef<THREE.Group>(null);
   const [isCollected, setIsCollected] = useState(false);
   const [hoverOffset, setHoverOffset] = useState(0);
+  const [localWasCollected, setLocalWasCollected] = useState(false);
   
   // Get needed store functions
   const { position: playerPosition } = usePlayer();
   const { collectItem, isCollected: checkIfCollected } = useCollectibles();
   const { playSuccess } = useAudio();
   
-  // Check if this collectible was already collected
-  const wasCollected = checkIfCollected(id);
-  
-  // Don't render if already collected
-  if (wasCollected) return null;
-  
+  // Define texture and color getters that don't directly use hooks
   // Load the appropriate texture based on collectible type
   const getTextureForType = () => {
     switch (type) {
@@ -51,16 +47,23 @@ export default function Collectible({ id, position, type }: CollectibleProps) {
     }
   };
   
-  // Create material for the collectible
-  const collectibleTexture = getTextureForType();
-  const collectibleMaterial = new THREE.SpriteMaterial({
+  // Create material for the collectible - only if not already collected
+  const collectibleTexture = !localWasCollected ? getTextureForType() : null;
+  const collectibleMaterial = !localWasCollected ? new THREE.SpriteMaterial({
     map: collectibleTexture,
     color: getColorForType(),
-  });
+  }) : null;
   
+  // Check if this collectible is already collected on component mount
+  useEffect(() => {
+    const wasCollected = checkIfCollected(id);
+    setLocalWasCollected(wasCollected);
+  }, [id, checkIfCollected]);
+
   // Animation and collision detection
   useFrame((state, delta) => {
-    if (!collectibleRef.current || isCollected) return;
+    // Skip animations if the collectible is already collected or being collected
+    if (!collectibleRef.current || isCollected || localWasCollected) return;
     
     // Get current positions
     const itemPos = collectibleRef.current.position;
@@ -80,6 +83,7 @@ export default function Collectible({ id, position, type }: CollectibleProps) {
     if (distanceToPlayer < 1.2 && !isCollected) {
       // Mark as collected
       setIsCollected(true);
+      setLocalWasCollected(true);
       
       // Add to collected items in store
       collectItem(id, type);
@@ -117,15 +121,21 @@ export default function Collectible({ id, position, type }: CollectibleProps) {
     }
   };
   
+  // Don't render anything if the collectible is already collected
+  if (localWasCollected) return null;
+  
   return (
     <group 
       ref={collectibleRef} 
       position={[position[0], position[1], position[2]]}
     >
-      <sprite
-        scale={[1, 1, 1]}
-        material={collectibleMaterial}
-      />
+      {/* Only render sprite if material exists - using type assertion to fix TypeScript error */}
+      {collectibleMaterial && (
+        <sprite
+          scale={[1, 1, 1]}
+          material={collectibleMaterial as THREE.SpriteMaterial}
+        />
+      )}
       
       {/* Glow effect */}
       <pointLight 
