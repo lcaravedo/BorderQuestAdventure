@@ -40,6 +40,9 @@ export default function Game2DCanvas() {
   // Scoring system
   const [score, setScore] = useState(0);
   
+  // Pause state
+  const [isPaused, setIsPaused] = useState(false);
+  
   // Animation and game loop reference
   const animationFrameIdRef = useRef<number>(0);
   const gameInitializedRef = useRef<boolean>(false);
@@ -99,10 +102,53 @@ export default function Game2DCanvas() {
     const handleKeyDown = (e: KeyboardEvent) => {
       keysPressed.current.add(e.code);
       
+      // Toggle pause when Enter is pressed
+      if (e.code === 'Enter') {
+        setIsPaused(prevPaused => !prevPaused);
+        return;
+      }
+      
+      // If game is paused, don't process other inputs
+      if (isPaused) return;
+      
       // Immediately handle jump to make controls more responsive
       if ((e.code === 'ArrowUp' || e.code === 'KeyW' || e.code === 'Space') && isGroundedRef.current) {
         playerVelRef.current.y = -JUMP_FORCE;
         isGroundedRef.current = false;
+        playHit();
+      }
+      
+      // Handle sword attack (M key)
+      if (e.code === 'KeyM' && !attackCooldownRef.current) {
+        isAttackingRef.current = true;
+        attackCooldownRef.current = true;
+        
+        // Create sword hitbox in front of player
+        const swordWidth = 60;
+        const swordHeight = 40;
+        const swordX = playerPosRef.current.x + (isFacingRightRef.current ? 40 : -40);
+        const swordY = playerPosRef.current.y;
+        
+        swordHitboxRef.current = {
+          x: swordX,
+          y: swordY,
+          width: swordWidth,
+          height: swordHeight,
+          active: true
+        };
+        
+        // Reset attack state after animation
+        setTimeout(() => {
+          isAttackingRef.current = false;
+          swordHitboxRef.current.active = false;
+        }, 300);
+        
+        // Reset cooldown after delay
+        setTimeout(() => {
+          attackCooldownRef.current = false;
+        }, 500);
+        
+        // Play attack sound
         playHit();
       }
     };
@@ -118,7 +164,7 @@ export default function Game2DCanvas() {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
     };
-  }, [playHit]);
+  }, [playHit, isPaused]);
   
   // Handle window resize
   useEffect(() => {
@@ -436,9 +482,20 @@ export default function Game2DCanvas() {
   
   // Function to draw the UI (health, lives, score)
   const drawUI = (ctx: CanvasRenderingContext2D) => {
-    // Draw background for UI
+    // Draw score at top center
     ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
-    ctx.fillRect(10, 10, 200, 80); // Made taller to include score
+    const scoreWidth = 150;
+    ctx.fillRect(width/2 - scoreWidth/2, 10, scoreWidth, 30);
+    
+    ctx.fillStyle = '#FFFFFF';
+    ctx.font = '12px "Press Start 2P", monospace';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(`Score: ${score}`, width/2, 25);
+    
+    // Draw health and lives on left side
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+    ctx.fillRect(10, 10, 200, 60);
     
     // Draw health bar
     ctx.fillStyle = '#666666';
@@ -478,10 +535,31 @@ export default function Game2DCanvas() {
     ctx.font = '12px "Press Start 2P", monospace';
     ctx.fillText(`Lives: ${hearts}`, 110, 45);
     
-    // Draw score
-    ctx.fillStyle = '#FFFFFF';
-    ctx.font = '12px "Press Start 2P", monospace';
-    ctx.fillText(`Score: ${score}`, 20, 70);
+    // Draw pause instructions
+    if (isPaused) {
+      // Draw pause screen overlay
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+      ctx.fillRect(0, 0, width, height);
+      
+      ctx.fillStyle = '#FFFFFF';
+      ctx.font = '24px "Press Start 2P", monospace';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('PAUSED', width/2, height/2 - 50);
+      
+      ctx.font = '16px "Press Start 2P", monospace';
+      ctx.fillText('Press ENTER to continue', width/2, height/2 + 20);
+    } else {
+      // Show pause hint at bottom right
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+      ctx.fillRect(width - 160, height - 40, 150, 30);
+      
+      ctx.fillStyle = '#FFFFFF';
+      ctx.font = '10px "Press Start 2P", monospace';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('ENTER to pause', width - 85, height - 25);
+    }
   };
 
   // Main game rendering and update loop
@@ -534,6 +612,17 @@ export default function Game2DCanvas() {
       // Draw background - background doesn't move with camera
       ctx.fillStyle = levelData.backgroundColor || '#87CEEB';
       ctx.fillRect(0, 0, width, height);
+      
+      // If game is paused, just draw the pause screen and exit the game loop
+      if (isPaused) {
+        // Draw the game world but don't update it
+        // (This will make sure the game elements are still visible during pause)
+        
+        // But don't process any game logic - freeze the game
+        drawUI(ctx);
+        animationFrameIdRef.current = requestAnimationFrame(gameLoop);
+        return;
+      }
       
       // Get camera offset for drawing
       const cameraX = cameraOffsetRef.current.x;
@@ -1074,31 +1163,243 @@ export default function Game2DCanvas() {
           }
           ctx.restore();
         } else {
-          // Fallback if texture isn't loaded
-          ctx.fillStyle = enemyColor;
-          ctx.fillRect(enemyX - halfSize, enemy.y - halfSize, size, size);
+          // Draw different animal shapes based on enemy type
+          if (enemy.type === 'cat' || enemy.type === 'mutant_cat') {
+            // Draw cat
+            ctx.fillStyle = enemyColor;
+            
+            // Body
+            ctx.beginPath();
+            ctx.ellipse(enemyX, enemy.y, halfSize, halfSize/1.5, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Head
+            ctx.beginPath();
+            ctx.arc(enemyX - halfSize/2, enemy.y - halfSize/2, halfSize/1.5, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Ears
+            ctx.beginPath();
+            ctx.moveTo(enemyX - halfSize/2 - size/8, enemy.y - halfSize - size/8);
+            ctx.lineTo(enemyX - halfSize/2, enemy.y - halfSize - size/4);
+            ctx.lineTo(enemyX - halfSize/2 + size/8, enemy.y - halfSize - size/8);
+            ctx.fill();
+            
+            ctx.beginPath();
+            ctx.moveTo(enemyX - halfSize/2 - size/4, enemy.y - halfSize);
+            ctx.lineTo(enemyX - halfSize/2 - size/5, enemy.y - halfSize - size/5);
+            ctx.lineTo(enemyX - halfSize/2 - size/8, enemy.y - halfSize);
+            ctx.fill();
+            
+            // Eyes
+            ctx.fillStyle = '#FFFFFF';
+            ctx.beginPath();
+            ctx.arc(enemyX - halfSize/2 - size/8, enemy.y - halfSize/2, size/10, 0, Math.PI * 2);
+            ctx.arc(enemyX - halfSize/2 + size/8, enemy.y - halfSize/2, size/10, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Pupils
+            ctx.fillStyle = '#000000';
+            ctx.beginPath();
+            ctx.arc(enemyX - halfSize/2 - size/8, enemy.y - halfSize/2, size/20, 0, Math.PI * 2);
+            ctx.arc(enemyX - halfSize/2 + size/8, enemy.y - halfSize/2, size/20, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Tail
+            ctx.fillStyle = enemyColor;
+            ctx.beginPath();
+            ctx.moveTo(enemyX + halfSize/1.2, enemy.y);
+            ctx.quadraticCurveTo(
+              enemyX + size, 
+              enemy.y - halfSize/2, 
+              enemyX + size, 
+              enemy.y - size/2
+            );
+            ctx.lineWidth = size/10;
+            ctx.stroke();
+            
+          } else if (enemy.type === 'crow' || enemy.type === 'mutant_crow') {
+            // Draw crow
+            ctx.fillStyle = enemyColor;
+            
+            // Body
+            ctx.beginPath();
+            ctx.ellipse(enemyX, enemy.y, halfSize, halfSize/1.5, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Head
+            ctx.beginPath();
+            ctx.arc(enemyX + halfSize/2, enemy.y - halfSize/3, halfSize/1.5, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Beak
+            ctx.fillStyle = '#DDAA00';
+            ctx.beginPath();
+            ctx.moveTo(enemyX + halfSize, enemy.y - halfSize/3);
+            ctx.lineTo(enemyX + halfSize + size/5, enemy.y - halfSize/3 + size/10);
+            ctx.lineTo(enemyX + halfSize, enemy.y - halfSize/3 + size/5);
+            ctx.fill();
+            
+            // Wing
+            ctx.fillStyle = enemyColor;
+            ctx.beginPath();
+            ctx.moveTo(enemyX, enemy.y - halfSize/3);
+            ctx.lineTo(enemyX - halfSize/2, enemy.y - size);
+            ctx.lineTo(enemyX + halfSize/3, enemy.y - halfSize);
+            ctx.fill();
+            
+          } else if (enemy.type === 'frog' || enemy.type === 'mutant_frog') {
+            // Draw frog
+            ctx.fillStyle = enemyColor;
+            
+            // Body
+            ctx.beginPath();
+            ctx.arc(enemyX, enemy.y, halfSize, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Eyes
+            ctx.fillStyle = '#FFFFFF';
+            ctx.beginPath();
+            ctx.arc(enemyX - halfSize/2, enemy.y - halfSize/2, size/6, 0, Math.PI * 2);
+            ctx.arc(enemyX + halfSize/2, enemy.y - halfSize/2, size/6, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Pupils
+            ctx.fillStyle = '#000000';
+            ctx.beginPath();
+            ctx.arc(enemyX - halfSize/2, enemy.y - halfSize/2, size/12, 0, Math.PI * 2);
+            ctx.arc(enemyX + halfSize/2, enemy.y - halfSize/2, size/12, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Mouth
+            ctx.strokeStyle = '#FFFFFF';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(enemyX - halfSize/2, enemy.y + halfSize/4);
+            ctx.quadraticCurveTo(enemyX, enemy.y + halfSize/2, enemyX + halfSize/2, enemy.y + halfSize/4);
+            ctx.stroke();
+            
+          } else if (enemy.type === 'mouse' || enemy.type === 'mutant_mouse') {
+            // Draw mouse
+            ctx.fillStyle = enemyColor;
+            
+            // Body
+            ctx.beginPath();
+            ctx.ellipse(enemyX, enemy.y, halfSize, halfSize/1.5, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Head
+            ctx.beginPath();
+            ctx.arc(enemyX + halfSize/2, enemy.y - halfSize/4, halfSize/1.5, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Ears
+            ctx.beginPath();
+            ctx.arc(enemyX + halfSize/2 - size/10, enemy.y - halfSize/1.2, size/6, 0, Math.PI * 2);
+            ctx.arc(enemyX + halfSize/2 + size/10, enemy.y - halfSize/1.2, size/6, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Nose
+            ctx.fillStyle = '#FF9999';
+            ctx.beginPath();
+            ctx.arc(enemyX + halfSize, enemy.y - halfSize/4, size/12, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Eyes
+            ctx.fillStyle = '#000000';
+            ctx.beginPath();
+            ctx.arc(enemyX + halfSize/2 - size/10, enemy.y - halfSize/3, size/16, 0, Math.PI * 2);
+            ctx.arc(enemyX + halfSize/2 + size/10, enemy.y - halfSize/3, size/16, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Tail
+            ctx.strokeStyle = enemyColor;
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(enemyX - halfSize, enemy.y);
+            ctx.quadraticCurveTo(
+              enemyX - size, 
+              enemy.y - halfSize/2, 
+              enemyX - size, 
+              enemy.y - size/2
+            );
+            ctx.stroke();
+            
+          } else if (enemy.type === 'snake' || enemy.type === 'mutant_snake') {
+            // Draw snake
+            ctx.fillStyle = enemyColor;
+            
+            // Body segments
+            for (let i = 0; i < 3; i++) {
+              ctx.beginPath();
+              ctx.arc(enemyX - i * (size/4), enemy.y, size/4, 0, Math.PI * 2);
+              ctx.fill();
+            }
+            
+            // Head
+            ctx.beginPath();
+            ctx.arc(enemyX + size/4, enemy.y, size/3, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Eyes
+            ctx.fillStyle = '#FFFFFF';
+            ctx.beginPath();
+            ctx.arc(enemyX + size/3, enemy.y - size/12, size/10, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Pupils
+            ctx.fillStyle = '#000000';
+            ctx.beginPath();
+            ctx.arc(enemyX + size/3, enemy.y - size/12, size/20, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Tongue
+            ctx.strokeStyle = '#FF0000';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(enemyX + halfSize, enemy.y);
+            ctx.lineTo(enemyX + size, enemy.y);
+            ctx.moveTo(enemyX + size, enemy.y);
+            ctx.lineTo(enemyX + size + size/10, enemy.y - size/10);
+            ctx.moveTo(enemyX + size, enemy.y);
+            ctx.lineTo(enemyX + size + size/10, enemy.y + size/10);
+            ctx.stroke();
+            
+          } else {
+            // Fallback for unknown enemy types
+            ctx.fillStyle = enemyColor;
+            ctx.fillRect(enemyX - halfSize, enemy.y - halfSize, size, size);
+            
+            // Draw eyes
+            ctx.fillStyle = '#FFFFFF';
+            ctx.beginPath();
+            ctx.arc(enemyX - halfSize/2, enemy.y - halfSize/2, size/8, 0, Math.PI * 2);
+            ctx.arc(enemyX + halfSize/2, enemy.y - halfSize/2, size/8, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Draw mouth
+            ctx.strokeStyle = '#FFFFFF';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(enemyX, enemy.y + halfSize/4, size/6, 0, Math.PI);
+            ctx.stroke();
+          }
           
-          // Draw eyes and mouth for better visibility
-          ctx.fillStyle = '#FFFFFF';
-          ctx.beginPath();
-          ctx.arc(enemyX - halfSize/2, enemy.y - halfSize/2, size/8, 0, Math.PI * 2);
-          ctx.arc(enemyX + halfSize/2, enemy.y - halfSize/2, size/8, 0, Math.PI * 2);
-          ctx.fill();
-          
-          // Draw mouth
-          ctx.strokeStyle = '#FFFFFF';
-          ctx.lineWidth = 2;
-          ctx.beginPath();
-          ctx.arc(enemyX, enemy.y + halfSize/4, size/6, 0, Math.PI);
-          ctx.stroke();
-          
-          // For bosses, draw a crown
+          // For bosses, add a crown
           if (enemy.isBoss) {
             ctx.fillStyle = '#FFDD00'; // Gold
             ctx.beginPath();
             ctx.moveTo(enemyX - halfSize/2, enemy.y - halfSize);
-            ctx.lineTo(enemyX, enemy.y - halfSize - halfSize/2);
+            ctx.lineTo(enemyX - halfSize/4, enemy.y - halfSize - halfSize/3);
+            ctx.lineTo(enemyX, enemy.y - halfSize);
+            ctx.lineTo(enemyX + halfSize/4, enemy.y - halfSize - halfSize/3);
             ctx.lineTo(enemyX + halfSize/2, enemy.y - halfSize);
+            ctx.fill();
+            
+            // Crown jewels
+            ctx.fillStyle = '#FF0000';
+            ctx.beginPath();
+            ctx.arc(enemyX, enemy.y - halfSize - halfSize/6, size/16, 0, Math.PI * 2);
             ctx.fill();
           }
         }
