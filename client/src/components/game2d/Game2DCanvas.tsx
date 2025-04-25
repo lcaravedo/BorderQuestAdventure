@@ -17,9 +17,21 @@ export default function Game2DCanvas() {
   // Game state
   const { phase } = useGame();
   const { currentWorld, currentLevel } = useLevels();
-  const { resetPlayer, position, setPosition } = usePlayer();
-  const { resetCollectibles } = useCollectibles();
+  const { 
+    resetPlayer, 
+    position, 
+    setPosition, 
+    takeDamage, 
+    heal, 
+    powerUp, 
+    health,
+    isPoweredUp
+  } = usePlayer();
+  const { resetCollectibles, collectItem } = useCollectibles();
   const { playHit, playSuccess } = useAudio();
+  
+  // Invincibility state (for power-ups and temporary invincibility after getting hit)
+  const [isInvincible, setIsInvincible] = useState(false);
   
   // Animation and game loop reference
   const animationFrameIdRef = useRef<number>(0);
@@ -270,6 +282,12 @@ export default function Game2DCanvas() {
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
+    
+    // Local references to the functions from the stores to use in callbacks
+    const handleTakeDamage = takeDamage;
+    const handleHeal = heal;
+    const handlePowerUp = powerUp;
+    const handleCollectItem = collectItem;
     
     // Set canvas size for higher quality
     canvas.width = width * window.devicePixelRatio;
@@ -734,21 +752,72 @@ export default function Game2DCanvas() {
         }
       });
       
-      // Collision detection with dynamic enemies
-      enemiesRef.current.forEach((enemy) => {
-        const distX = Math.abs(playerPosRef.current.x - enemy.x);
-        const distY = Math.abs(playerPosRef.current.y - enemy.y);
-        
-        // Simple circular collision
-        if (distX < 30 && distY < 30) {
-          // Player gets hurt
-          playerVelRef.current.y = -5; // Bounce up a bit
-          playerVelRef.current.x = playerPosRef.current.x < enemy.x ? -5 : 5; // Bounce away
+      // Collision detection with collectible items and power-ups
+      obstaclesRef.current.forEach((obstacle, index) => {
+        // Only check collectibles and power-ups
+        if (['bone', 'visa', 'snack', 'mushroom', 'joint'].includes(obstacle.type)) {
+          const distX = Math.abs(playerPosRef.current.x - obstacle.x);
+          const distY = Math.abs(playerPosRef.current.y - obstacle.y);
           
-          // Play hit sound
-          playHit();
+          // Simple circular collision
+          if (distX < 25 && distY < 25) {
+            // Generate a random ID for the collectible
+            const collectibleId = `${obstacle.type}_${Math.floor(Math.random() * 10000)}`; 
+            
+            // Collect the item
+            if (obstacle.type === 'bone') {
+              // Collect bone
+              collectItem(collectibleId, 'bone');
+              playSuccess();
+            } else if (obstacle.type === 'visa') {
+              // Collect visa
+              collectItem(collectibleId, 'visa');
+              playSuccess();
+            } else if (obstacle.type === 'snack') {
+              // Heal player
+              heal(1); // Heal 1 health point
+              playSuccess();
+            } else if (obstacle.type === 'mushroom') {
+              // Transform into chihuahua
+              powerUp(30000); // 30 second powerup
+              playSuccess();
+            } else if (obstacle.type === 'joint') {
+              // Temporary invincibility
+              setIsInvincible(true);
+              setTimeout(() => setIsInvincible(false), 10000);
+              playSuccess();
+            }
+            
+            // Remove the collected item
+            obstaclesRef.current.splice(index, 1);
+          }
         }
       });
+      
+      // Collision detection with dynamic enemies
+      if (!isInvincible) {
+        enemiesRef.current.forEach((enemy) => {
+          const distX = Math.abs(playerPosRef.current.x - enemy.x);
+          const distY = Math.abs(playerPosRef.current.y - enemy.y);
+          
+          // Simple circular collision
+          if (distX < 30 && distY < 30) {
+            // Player gets hurt unless invincible
+            playerVelRef.current.y = -5; // Bounce up a bit
+            playerVelRef.current.x = playerPosRef.current.x < enemy.x ? -5 : 5; // Bounce away
+            
+            // Deal damage to player
+            takeDamage(1);
+            
+            // Play hit sound
+            playHit();
+            
+            // Small invincibility period after getting hit
+            setIsInvincible(true);
+            setTimeout(() => setIsInvincible(false), 1000);
+          }
+        });
+      }
       
       // Draw player character (with camera offset)
       const playerScreenX = playerPosRef.current.x - cameraX;
