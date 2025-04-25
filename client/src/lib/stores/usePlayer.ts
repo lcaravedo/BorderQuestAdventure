@@ -26,9 +26,13 @@ interface PlayerState {
   
   // Status
   isHidden: boolean;
+  isDashing: boolean;
+  isBarking: boolean;
+  isDigging: boolean;
   
   // Functions
   updatePosition: (newPosition: [number, number, number]) => void;
+  setPosition: (newPosition: [number, number, number]) => void; // Alias for updatePosition
   updateVelocity: (newVelocity: [number, number, number, number?]) => void;
   setGrounded: (grounded: boolean) => void;
   takeDamage: (amount: number) => void;
@@ -37,9 +41,14 @@ interface PlayerState {
   setPlayerSpawn: (position: [number, number, number]) => void;
   upgradeAbility: (ability: 'bark' | 'dig' | 'dash') => void;
   setHidden: (hidden: boolean) => void;
+  setIsDashing: (dashing: boolean) => void;
+  setIsBarking: (barking: boolean) => void;
+  setIsDigging: (digging: boolean) => void;
   powerUp: (duration: number) => void;  // Activate power-up for duration milliseconds
   resetPowerUp: () => void;  // Reset to pear head form
   addHeart: () => void;  // Add a heart (increase max lives)
+  jump: () => void; // Make player jump
+  dash: () => void; // Make player dash
   
   // Save/Load
   saveProgress: () => void;
@@ -71,9 +80,13 @@ export const usePlayer = create<PlayerState>()(
     
     // Status
     isHidden: false,
+    isDashing: false,
+    isBarking: false,
+    isDigging: false,
     
     // Update player position
     updatePosition: (newPosition) => set({ position: newPosition }),
+    setPosition: (newPosition) => set({ position: newPosition }), // Alias for updatePosition
     
     // Update velocity (and bark flag)
     updateVelocity: (newVelocity) => set({ 
@@ -84,6 +97,39 @@ export const usePlayer = create<PlayerState>()(
         newVelocity[3] || 0
       ] 
     }),
+    
+    // Set ability states
+    setIsDashing: (dashing) => set({ isDashing: dashing }),
+    setIsBarking: (barking) => set({ isBarking: barking }),
+    setIsDigging: (digging) => set({ isDigging: digging }),
+    
+    // Jump action
+    jump: () => {
+      const { isGrounded, velocity } = get();
+      if (isGrounded) {
+        set({ 
+          velocity: [velocity[0], -8, velocity[2], velocity[3]], 
+          isGrounded: false 
+        });
+      }
+    },
+    
+    // Dash action
+    dash: () => {
+      const { isDashing, isGrounded, velocity, dashLevel } = get();
+      if (!isDashing && isGrounded) {
+        const dashPower = 1 + (dashLevel * 0.25);
+        set({ 
+          isDashing: true,
+          velocity: [velocity[0] * dashPower, velocity[1], velocity[2], velocity[3]]
+        });
+        
+        // Reset dash after a short duration
+        setTimeout(() => {
+          set({ isDashing: false });
+        }, 300);
+      }
+    },
     
     // Set grounded state
     setGrounded: (grounded) => set({ isGrounded: grounded }),
@@ -125,6 +171,9 @@ export const usePlayer = create<PlayerState>()(
       health: 3,
       stamina: 100,
       isHidden: false,
+      isDashing: false,
+      isBarking: false,
+      isDigging: false,
       isPoweredUp: false,
       powerUpTimeRemaining: 0
     }),
