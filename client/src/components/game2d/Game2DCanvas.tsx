@@ -82,25 +82,119 @@ export default function Game2DCanvas() {
       const level = getLevelData(currentWorld, currentLevel);
       setLevelData(level);
       
-      // Set up initial player position
-      playerPosRef.current = {
-        x: level?.playerStart?.[0] || 100,
-        y: level?.playerStart?.[1] || 100
-      };
-      playerVelRef.current = { x: 0, y: 0 };
-      
-      // Initialize game objects from level data
-      if (level?.obstacles) {
-        obstaclesRef.current = [...level.obstacles];
+      // Set up initial player position from playerSpawn
+      if (level?.playerSpawn) {
+        // Convert 3D coordinates to 2D for canvas
+        // Scale factors to convert from 3D to pixel coordinates
+        const scaleX = 100; // 1 unit in 3D = 100px in 2D
+        const scaleY = 100;
+        
+        playerPosRef.current = {
+          x: level.playerSpawn[0] * scaleX + 100, // Add offset to start
+          y: height - (level.playerSpawn[1] * scaleY) - 50 // Invert Y and offset from bottom
+        };
+      } else {
+        playerPosRef.current = { x: 100, y: height - 100 };
       }
       
-      // Add checkpoints if defined
-      if (level?.checkpoints) {
+      playerVelRef.current = { x: 0, y: 0 };
+      
+      // Convert platforms to obstacles
+      if (level?.platforms) {
+        const scaleX = 100; // 1 unit in 3D = 100px in 2D
+        const scaleY = 100;
+        
+        level.platforms.forEach((platform: any) => {
+          // Extract position and size from 3D data
+          const [x, y, z] = platform.position;
+          const [width, height, depth] = platform.size;
+          
+          // Convert to 2D canvas coordinates
+          obstaclesRef.current.push({
+            type: 'platform',
+            x: x * scaleX,
+            y: height - (y * scaleY) - (platform.size[1] * scaleY), // Invert Y coordinate
+            width: width * scaleX,
+            height: platform.size[1] * scaleY,
+            color: platform.color || '#8B4513',
+            moving: platform.moving || false,
+            movementAxis: platform.movementAxis || 'x',
+            movementRange: platform.movementRange || 0,
+            movementSpeed: platform.movementSpeed || 1,
+            originalX: x * scaleX,
+            originalY: height - (y * scaleY) - (platform.size[1] * scaleY)
+          });
+        });
+      }
+      
+      // Add collectibles
+      if (level?.collectibles) {
+        const scaleX = 100; 
+        const scaleY = 100;
+        
+        level.collectibles.forEach((collectible: any, index: number) => {
+          const [x, y, z] = collectible.position;
+          
+          obstaclesRef.current.push({
+            type: 'collectible',
+            id: `collectible-${index}`,
+            x: x * scaleX,
+            y: height - (y * scaleY) - 30, // Slight offset for item height
+            width: 30,
+            height: 30,
+            collectibleType: collectible.type || 'bone',
+            collected: false
+          });
+        });
+      }
+      
+      // Add enemies
+      if (level?.enemies) {
+        const scaleX = 100;
+        const scaleY = 100;
+        
+        level.enemies.forEach((enemy: any, index: number) => {
+          const [x, y, z] = enemy.position;
+          const [minX, maxX] = enemy.patrolArea || [x - 2, x + 2];
+          
+          obstaclesRef.current.push({
+            type: 'enemy',
+            id: `enemy-${index}`,
+            x: x * scaleX,
+            y: height - (y * scaleY) - 40, // Offset for enemy height
+            width: 40,
+            height: 40,
+            enemyType: enemy.type || 'cat',
+            speed: enemy.speed || 1,
+            patrolMinX: minX * scaleX,
+            patrolMaxX: maxX * scaleX,
+            direction: 1 // 1 = right, -1 = left
+          });
+        });
+      }
+      
+      // Add checkpoint if not already defined
+      if (!level?.checkpoints) {
+        // Add default checkpoint at 1/3 of the level
+        const levelWidth = level?.bounds?.max || 40;
+        obstaclesRef.current.push({
+          type: 'checkpoint',
+          x: levelWidth * 100 / 3,
+          y: height - 100,
+          width: 40,
+          height: 80,
+          activated: false
+        });
+      } else {
+        // Add checkpoints if defined
+        const scaleX = 100;
+        const scaleY = 100;
+        
         level.checkpoints.forEach((checkpoint: [number, number]) => {
           obstaclesRef.current.push({
             type: 'checkpoint',
-            x: checkpoint[0],
-            y: checkpoint[1],
+            x: checkpoint[0] * scaleX,
+            y: height - (checkpoint[1] * scaleY) - 80, // Height of checkpoint
             width: 40,
             height: 80,
             activated: false
@@ -108,11 +202,26 @@ export default function Game2DCanvas() {
         });
       }
       
+      // Add exit/goal
+      if (level?.exit) {
+        const scaleX = 100;
+        const scaleY = 100;
+        
+        obstaclesRef.current.push({
+          type: 'exit',
+          x: level.exit[0] * scaleX,
+          y: height - (level.exit[1] * scaleY) - 60,
+          width: 40,
+          height: 60,
+          reached: false
+        });
+      }
+      
       console.log("Level loaded successfully:", level);
     } catch (error) {
       console.error("Error loading level data:", error);
     }
-  }, [currentWorld, currentLevel, resetPlayer, resetCollectibles]);
+  }, [currentWorld, currentLevel, resetPlayer, resetCollectibles, height]);
   
   // Set up keyboard controls for pausing
   useEffect(() => {
@@ -414,6 +523,53 @@ export default function Game2DCanvas() {
             obstacle.x, 
             obstacle.y, 
             obstacle.width, 
+            obstacle.height
+          );
+        }
+      } else if (obstacle.type === 'collectible' && !obstacle.collected) {
+        // Draw collectible
+        ctx.fillStyle = '#FFD700'; // Default gold color
+        ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+        
+        // Draw collectible texture based on type
+        const textureKey = `collectible_${obstacle.collectibleType}`;
+        if (textures.current[textureKey]) {
+          ctx.drawImage(
+            textures.current[textureKey],
+            obstacle.x,
+            obstacle.y,
+            obstacle.width,
+            obstacle.height
+          );
+        }
+      } else if (obstacle.type === 'enemy') {
+        // Draw enemy
+        ctx.fillStyle = '#FF0000'; // Default red color
+        ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+        
+        // Draw enemy texture based on type
+        const textureKey = `enemy_${obstacle.enemyType}`;
+        if (textures.current[textureKey]) {
+          ctx.drawImage(
+            textures.current[textureKey],
+            obstacle.x,
+            obstacle.y,
+            obstacle.width,
+            obstacle.height
+          );
+        }
+      } else if (obstacle.type === 'exit') {
+        // Draw exit/goal
+        ctx.fillStyle = '#00FF00'; // Default green color
+        ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+        
+        // Draw exit texture
+        if (textures.current['exit']) {
+          ctx.drawImage(
+            textures.current['exit'],
+            obstacle.x,
+            obstacle.y,
+            obstacle.width,
             obstacle.height
           );
         }
