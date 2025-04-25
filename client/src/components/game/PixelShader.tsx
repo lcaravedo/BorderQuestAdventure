@@ -1,13 +1,21 @@
 import * as THREE from "three";
+import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer";
+import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass";
+import { ShaderPass } from "three/examples/jsm/postprocessing/ShaderPass";
 
 // Create a post-processing effect for pixelation to achieve 8-bit aesthetic
 export function PixelShader(scene: THREE.Scene, options = { pixelSize: 4 }) {
-  const composer = new THREE.EffectComposer(
-    new THREE.WebGLRenderer({
-      antialias: false,
-      powerPreference: "high-performance",
-    })
-  );
+  // Create a renderer for the effect composer
+  const renderer = new THREE.WebGLRenderer({
+    antialias: false,
+    powerPreference: "high-performance",
+  });
+  
+  // Set renderer size to match window
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  
+  // Create the effect composer with the imported module
+  const composer = new EffectComposer(renderer);
   
   // Create a shader for pixelation
   const pixelationShader = {
