@@ -24,11 +24,13 @@ export default function Game2DCanvas() {
     setPosition, 
     takeDamage, 
     heal, 
-    powerUp, 
+    powerUp,
+    resetPowerUp,
     health,
     hearts,
     maxHealth,
     isPoweredUp,
+    powerUpTimeRemaining,
     isGameOver
   } = usePlayer();
   const { resetCollectibles, collectItem } = useCollectibles();
@@ -594,23 +596,33 @@ export default function Game2DCanvas() {
     const handlePowerUp = powerUp;
     const handleCollectItem = collectItem;
     
-    // Initialize powerup timer when the power up changes
+    // Use a ref for the powerup timer to avoid cleanup issues
     const powerUpTimerRef = useRef<number | null>(null);
     
-    // Clear existing timer when component unmounts or re-renders
-    if (powerUpTimerRef.current) {
-      clearTimeout(powerUpTimerRef.current);
-      powerUpTimerRef.current = null;
-    }
-    
-    // Set timer if powered up
-    if (isPoweredUp && powerUpTimeRemaining > 0) {
-      powerUpTimerRef.current = window.setTimeout(() => {
-        // Reset power up state after timer expires
-        resetPowerUp();
-        console.log("Power-up expired!");
-      }, powerUpTimeRemaining) as unknown as number;
-    }
+    // Setup powerup timer effect
+    useEffect(() => {
+      // Clear existing timer when component unmounts or re-renders
+      if (powerUpTimerRef.current) {
+        clearTimeout(powerUpTimerRef.current);
+        powerUpTimerRef.current = null;
+      }
+      
+      // Set timer if powered up
+      if (isPoweredUp && powerUpTimeRemaining > 0) {
+        powerUpTimerRef.current = window.setTimeout(() => {
+          // Reset power up state after timer expires
+          resetPowerUp();
+          console.log("Power-up expired!");
+        }, powerUpTimeRemaining) as unknown as number;
+      }
+      
+      // Cleanup when unmounting
+      return () => {
+        if (powerUpTimerRef.current) {
+          clearTimeout(powerUpTimerRef.current);
+        }
+      };
+    }, [isPoweredUp, powerUpTimeRemaining, resetPowerUp]);
     
     // Set canvas size for higher quality
     canvas.width = width * window.devicePixelRatio;
