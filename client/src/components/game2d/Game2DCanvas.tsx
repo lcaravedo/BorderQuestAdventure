@@ -55,16 +55,8 @@ export default function Game2DCanvas() {
         setIsPaused(prev => !prev);
       }
       
-      // Jump with Space (also debug log)
-      if (e.code === 'Space' && isGroundedRef.current && phase === 'playing') {
-        console.log("Jump triggered!");
-        playerVelRef.current.y = -JUMP_FORCE;
-        isGroundedRef.current = false;
-      }
-      
       // Attack with 'KeyM'
-      if (e.code === 'KeyM' && !attackCooldownRef.current && phase === 'playing') {
-        console.log("Attack triggered!");
+      if (e.code === 'KeyM' && !attackCooldownRef.current) {
         isAttackingRef.current = true;
         attackCooldownRef.current = true;
         
@@ -142,9 +134,6 @@ export default function Game2DCanvas() {
   // Game resources
   const textures = useRef<Record<string, HTMLImageElement>>({});
   
-  // Power-up timer ref (needs to be at component level, not inside hooks)
-  const powerUpTimerRef = useRef<number | null>(null);
-  
   // Load textures
   useEffect(() => {
     const loadTexture = async (key: string, url: string) => {
@@ -192,10 +181,7 @@ export default function Game2DCanvas() {
   // Setup powerup timer effect
   useEffect(() => {
     // Clear existing timer when component unmounts or re-renders
-    if (powerUpTimerRef.current) {
-      clearTimeout(powerUpTimerRef.current);
-      powerUpTimerRef.current = null;
-    }
+    const powerUpTimerRef = useRef<number | null>(null);
     
     if (isPoweredUp && powerUpTimeRemaining > 0) {
       powerUpTimerRef.current = window.setTimeout(() => {
@@ -312,34 +298,14 @@ export default function Game2DCanvas() {
           );
         }
       } else {
-        // Fallback if texture isn't loaded - simple chihuahua shape
-        const baseX = playerX - playerSizeRef.current.width / 2;
-        const baseY = playerY - playerSizeRef.current.height / 2;
-        const width = playerSizeRef.current.width;
-        const height = playerSizeRef.current.height;
-        
-        // Body (tan/brown for chihuahua color)
-        ctx.fillStyle = isPoweredUp ? '#FFCC00' : '#CD853F';
-        ctx.fillRect(baseX, baseY, width, height);
-        
-        // Eyes (dark)
-        ctx.fillStyle = '#000000';
-        const eyeSize = width * 0.1;
-        ctx.fillRect(baseX + width * 0.7, baseY + height * 0.3, eyeSize, eyeSize);
-        
-        // Ears - small triangular ears
-        ctx.fillStyle = isPoweredUp ? '#FFC107' : '#8B4513';
-        ctx.beginPath();
-        ctx.moveTo(baseX, baseY);
-        ctx.lineTo(baseX, baseY - height * 0.2);
-        ctx.lineTo(baseX + width * 0.2, baseY);
-        ctx.fill();
-        
-        ctx.beginPath();
-        ctx.moveTo(baseX + width, baseY);
-        ctx.lineTo(baseX + width, baseY - height * 0.2);
-        ctx.lineTo(baseX + width * 0.8, baseY);
-        ctx.fill();
+        // Fallback if texture isn't loaded
+        ctx.fillStyle = isPoweredUp ? '#FFFF00' : '#FF0000';
+        ctx.fillRect(
+          playerX - playerSizeRef.current.width / 2,
+          playerY - playerSizeRef.current.height / 2,
+          playerSizeRef.current.width,
+          playerSizeRef.current.height
+        );
       }
     };
     
