@@ -28,7 +28,7 @@ function App() {
   const { setBackgroundMusic, setHitSound, setSuccessSound } = useAudio();
   const [showCanvas, setShowCanvas] = useState(false);
 
-  // Initialize audio assets
+  // Initialize audio assets and game state
   useEffect(() => {
     // Background music
     const backgroundMusic = new Audio("/sounds/game_music.mp3");
@@ -43,6 +43,8 @@ function App() {
     // Success sound (used for collectibles)
     const successSound = new Audio("/sounds/success.mp3");
     setSuccessSound(successSound);
+
+    console.log("App initialized in 'ready' state");
 
     // Show canvas after everything is loaded
     setShowCanvas(true);
