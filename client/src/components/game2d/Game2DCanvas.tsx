@@ -37,6 +37,9 @@ export default function Game2DCanvas() {
   // Invincibility state (for power-ups and temporary invincibility after getting hit)
   const [isInvincible, setIsInvincible] = useState(false);
   
+  // Scoring system
+  const [score, setScore] = useState(0);
+  
   // Animation and game loop reference
   const animationFrameIdRef = useRef<number>(0);
   const gameInitializedRef = useRef<boolean>(false);
@@ -49,6 +52,9 @@ export default function Game2DCanvas() {
   const isGroundedRef = useRef(false);
   const isFacingRightRef = useRef(true);
   const keysPressed = useRef<Set<string>>(new Set());
+  const isAttackingRef = useRef(false);
+  const attackCooldownRef = useRef(false);
+  const lastCheckpointRef = useRef({ x: 100, y: 100 });
   
   // Camera and level state
   const cameraOffsetRef = useRef({ x: 0, y: 0 });
@@ -60,14 +66,30 @@ export default function Game2DCanvas() {
     width: number; 
     height: number;
     color?: string; // Optional color property for platforms
+    content?: string; // For hidden blocks
+    revealed?: boolean; // For hidden blocks
+    contentVisible?: boolean; // For hidden blocks
+    activated?: boolean; // For checkpoints
+    hit?: boolean; // For tracking if a block has been hit
   }>>([]);
   const enemiesRef = useRef<Array<{ 
-    type: string; 
+    type: string; // 'cat', 'crow', 'frog', 'mouse', 'snake', or boss types
     x: number; 
     y: number; 
     direction: number; 
     speed: number; 
+    health: number; // For enemy health
+    shootCooldown?: number; // Time until next shot
+    isBoss?: boolean; // Whether this is a boss enemy
   }>>([]);
+  const projectilesRef = useRef<Array<{
+    x: number;
+    y: number;
+    velocityX: number;
+    velocityY: number;
+    fromEnemy: boolean; // Whether fired by enemy or player
+  }>>([]);
+  const swordHitboxRef = useRef({ x: 0, y: 0, width: 0, height: 0, active: false });
   
   // Game resources
   const textures = useRef<Record<string, HTMLImageElement>>({});
@@ -110,9 +132,9 @@ export default function Game2DCanvas() {
   }, []);
   
   // Generate random obstacles based on world type
-  const generateObstacles = (worldIndex: number, levelLength: number) => {
+  const generateObstacles = (worldIndex: number, levelIndex: number, levelLength: number) => {
     const obstacles = [];
-    const enemyTypes = ['cat', 'snake', 'drone', 'frog'];
+    const enemyTypes = ['cat', 'crow', 'frog', 'mouse', 'snake'];
     const obstacleTypes = ['sandstorm', 'cactus', 'rock', 'bush'];
     
     // Generate platforms
@@ -139,20 +161,77 @@ export default function Game2DCanvas() {
       obstacles.push(platform);
     }
     
-    // Generate enemies
+    // Generate regular enemies
     const numEnemies = 3 + Math.floor(Math.random() * 5); // 3-8 enemies
     for (let i = 0; i < numEnemies; i++) {
       const enemyX = 500 + (i * (levelLength / numEnemies));
       const enemyY = height - 70 - (Math.random() > 0.7 ? Math.random() * 200 : 0); // Some enemies on platforms
       const enemyType = enemyTypes[Math.floor(Math.random() * enemyTypes.length)];
       
+      // Different enemies have different health and abilities
+      let enemyHealth = 2; // Default health for basic enemies
+      let shootCooldown: number | undefined = undefined;
+      
+      // Set enemy-specific properties
+      if (enemyType === 'cat') {
+        enemyHealth = 3;
+        shootCooldown = 3000 + Math.random() * 2000; // 3-5 seconds between shots
+      } else if (enemyType === 'crow') {
+        enemyHealth = 2;
+        shootCooldown = 4000 + Math.random() * 3000; // 4-7 seconds between shots
+      } else if (enemyType === 'frog') {
+        enemyHealth = 4; // Tougher but no shooting
+      } else if (enemyType === 'mouse') {
+        enemyHealth = 1; // Weaker but faster
+      } else if (enemyType === 'snake') {
+        enemyHealth = 3;
+        shootCooldown = 5000 + Math.random() * 2000; // 5-7 seconds between shots
+      }
+      
       enemiesRef.current.push({
         type: enemyType,
         x: enemyX,
         y: enemyY,
         direction: Math.random() > 0.5 ? 1 : -1,
-        speed: 1 + Math.random() * 2
+        speed: 1 + Math.random() * 2,
+        health: enemyHealth,
+        shootCooldown: shootCooldown
       });
+    }
+    
+    // Add a boss at the end of the level if it's the last level of the world (level index 4)
+    if (levelIndex === 4) {
+      // Boss appears near the end of the level
+      const bossX = levelLength - 300;
+      const bossY = height - 120;
+      
+      // Different boss per world
+      let bossType;
+      if (worldIndex === 0) {
+        bossType = 'mutant_mouse';
+      } else if (worldIndex === 1) {
+        bossType = 'mutant_cat';
+      } else if (worldIndex === 2) {
+        bossType = 'mutant_crow';
+      } else if (worldIndex === 3) {
+        bossType = 'mutant_frog';
+      } else {
+        bossType = 'mutant_snake';
+      }
+      
+      // Boss has more health and can shoot more frequently
+      enemiesRef.current.push({
+        type: bossType,
+        x: bossX,
+        y: bossY,
+        direction: -1, // Initially face the player
+        speed: 0.5, // Slower than regular enemies
+        health: 10, // Much more health
+        shootCooldown: 2000, // Shoots more frequently
+        isBoss: true
+      });
+      
+      console.log(`Boss ${bossType} added at the end of world ${worldIndex}`);
     }
     
     // Generate hazards and decorations
@@ -188,6 +267,42 @@ export default function Game2DCanvas() {
       });
     }
     
+    // Generate hidden blocks with power-ups and coins
+    const powerUpTypes = ['mushroom', 'joint', 'coin5', 'coin10', 'coin50'];
+    const numHiddenBlocks = 3 + Math.floor(Math.random() * 4); // 3-7 hidden blocks
+    
+    for (let i = 0; i < numHiddenBlocks; i++) {
+      const blockX = 400 + (i * (levelLength / numHiddenBlocks));
+      const blockY = height - 150 - Math.random() * 180; // At different heights
+      const contentType = powerUpTypes[Math.floor(Math.random() * powerUpTypes.length)];
+      
+      obstacles.push({
+        type: 'hiddenBlock',
+        x: blockX,
+        y: blockY,
+        width: 40,
+        height: 40,
+        content: contentType,
+        revealed: false // Block starts hidden
+      });
+    }
+    
+    // Generate tequila-drinking Mexican checkpoint statues
+    const numCheckpoints = 2 + Math.floor(Math.random() * 2); // 2-4 checkpoints per level
+    for (let i = 0; i < numCheckpoints; i++) {
+      const checkpointX = 800 + (i * (levelLength / (numCheckpoints + 1))); // Distribute evenly
+      const checkpointY = height - 90; // On the ground
+      
+      obstacles.push({
+        type: 'checkpoint',
+        x: checkpointX,
+        y: checkpointY,
+        width: 50,
+        height: 80,
+        activated: false // Checkpoint starts inactive
+      });
+    }
+    
     return obstacles;
   };
   
@@ -215,7 +330,7 @@ export default function Game2DCanvas() {
       const levelLength = 5000 + (currentWorld * 1000) + (currentLevel * 500);
       
       // Populate level with randomly generated obstacles
-      const obstacles = generateObstacles(currentWorld, levelLength);
+      const obstacles = generateObstacles(currentWorld, currentLevel, levelLength);
       obstaclesRef.current = obstacles;
       
       // Set up base level data
@@ -600,6 +715,180 @@ export default function Game2DCanvas() {
             );
             ctx.fill();
           }
+        } else if (obstacle.type === 'hiddenBlock') {
+          // Draw hidden block (if revealed or show subtle hints)
+          if (obstacle.revealed) {
+            // Draw revealed block
+            ctx.fillStyle = '#CC8800'; // Golden block
+            ctx.fillRect(
+              obstacleX - obstacle.width / 2,
+              obstacle.y - obstacle.height / 2,
+              obstacle.width,
+              obstacle.height
+            );
+            
+            // Draw question mark
+            ctx.fillStyle = '#FFFFFF';
+            ctx.font = '20px "Press Start 2P", monospace';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('?', obstacleX, obstacle.y);
+            
+            // If the content is visible, draw it floating above the block
+            if (obstacle.contentVisible) {
+              // Draw the power-up or coin
+              const contentY = obstacle.y - 50 + Math.sin(timestamp * 0.003) * 5;
+              
+              if (obstacle.content === 'mushroom') {
+                // Draw mushroom
+                ctx.fillStyle = '#FF0000'; // Red cap
+                ctx.fillRect(obstacleX - 15, contentY - 15, 30, 15);
+                
+                // Draw stem
+                ctx.fillStyle = '#FFFFFF';
+                ctx.fillRect(obstacleX - 10, contentY, 20, 15);
+                
+                // Draw spots
+                ctx.fillStyle = '#FFFFFF';
+                ctx.beginPath();
+                ctx.arc(obstacleX - 5, contentY - 10, 3, 0, Math.PI * 2);
+                ctx.arc(obstacleX + 5, contentY - 7, 3, 0, Math.PI * 2);
+                ctx.fill();
+              } else if (obstacle.content === 'joint') {
+                // Draw joint
+                ctx.fillStyle = '#DDCC88'; // Light brown
+                ctx.fillRect(obstacleX - 15, contentY - 5, 30, 10);
+                
+                // Draw lit end
+                ctx.fillStyle = '#FF3300';
+                ctx.beginPath();
+                ctx.arc(obstacleX + 15, contentY, 5, 0, Math.PI * 2);
+                ctx.fill();
+              } else if (obstacle.content.startsWith('coin')) {
+                // Draw coin 
+                ctx.fillStyle = '#FFDD00'; // Gold
+                ctx.beginPath();
+                ctx.arc(obstacleX, contentY, 15, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Draw coin value
+                const coinValue = obstacle.content.replace('coin', '');
+                ctx.fillStyle = '#000000';
+                ctx.font = '10px "Press Start 2P", monospace';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(coinValue, obstacleX, contentY);
+              }
+            }
+          } else {
+            // Draw subtle hint for hidden block
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
+            ctx.fillRect(
+              obstacleX - obstacle.width / 2,
+              obstacle.y - obstacle.height / 2,
+              obstacle.width,
+              obstacle.height
+            );
+            
+            // Slightly visible question mark
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+            ctx.font = '20px "Press Start 2P", monospace';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('?', obstacleX, obstacle.y);
+          }
+        } else if (obstacle.type === 'checkpoint') {
+          // Draw checkpoint (tequila-drinking Mexican statue)
+          const isActive = obstacle.activated;
+          
+          // Draw the statue base
+          ctx.fillStyle = isActive ? '#A0A0A0' : '#808080'; // Lighter when activated
+          ctx.fillRect(
+            obstacleX - 20,
+            obstacle.y - 40,
+            40,
+            80
+          );
+          
+          // Draw the sombrero
+          ctx.fillStyle = '#CC8844';
+          ctx.beginPath();
+          ctx.ellipse(
+            obstacleX,
+            obstacle.y - 45,
+            25,
+            10,
+            0,
+            0,
+            Math.PI * 2
+          );
+          ctx.fill();
+          
+          ctx.fillStyle = '#FFDD00';
+          ctx.beginPath();
+          ctx.ellipse(
+            obstacleX,
+            obstacle.y - 50,
+            15,
+            7,
+            0,
+            0,
+            Math.PI * 2
+          );
+          ctx.fill();
+          
+          // Draw the tequila bottle
+          ctx.fillStyle = '#00CC44'; // Green bottle
+          ctx.fillRect(
+            obstacleX + 15,
+            obstacle.y - 30,
+            7,
+            20
+          );
+          
+          // Draw the face (eyes and smile)
+          ctx.fillStyle = '#000000';
+          
+          // Eyes - closed if activated (drunk)
+          if (isActive) {
+            // Drunk closed eyes
+            ctx.fillRect(obstacleX - 10, obstacle.y - 30, 5, 1);
+            ctx.fillRect(obstacleX + 5, obstacle.y - 30, 5, 1);
+            
+            // Drunk smile with mustache
+            ctx.beginPath();
+            ctx.moveTo(obstacleX - 15, obstacle.y - 20);
+            ctx.lineTo(obstacleX + 15, obstacle.y - 20);
+            ctx.stroke();
+            
+            // Mustache
+            ctx.beginPath();
+            ctx.moveTo(obstacleX - 15, obstacle.y - 22);
+            ctx.quadraticCurveTo(obstacleX, obstacle.y - 18, obstacleX + 15, obstacle.y - 22);
+            ctx.stroke();
+          } else {
+            // Regular eyes
+            ctx.fillRect(obstacleX - 10, obstacle.y - 30, 5, 5);
+            ctx.fillRect(obstacleX + 5, obstacle.y - 30, 5, 5);
+            
+            // Regular smile with mustache
+            ctx.beginPath();
+            ctx.arc(obstacleX, obstacle.y - 15, 10, 0.1, Math.PI - 0.1, false);
+            ctx.stroke();
+            
+            // Mustache
+            ctx.beginPath();
+            ctx.moveTo(obstacleX - 15, obstacle.y - 15);
+            ctx.quadraticCurveTo(obstacleX, obstacle.y - 10, obstacleX + 15, obstacle.y - 15);
+            ctx.stroke();
+          }
+          
+          // Draw checkpoint text
+          ctx.fillStyle = isActive ? '#FFFFFF' : '#AAAAAA';
+          ctx.font = '10px "Press Start 2P", monospace';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'top';
+          ctx.fillText('SAVE', obstacleX, obstacle.y + 40);
         } else {
           // Draw obstacle
           ctx.fillStyle = obstacle.type === 'sandstorm' ? '#E8C98C' :
@@ -708,10 +997,151 @@ export default function Game2DCanvas() {
         }
       });
       
-      // Handle player movement
+      // Handle player movement and actions
       const left = keysPressed.current.has('ArrowLeft') || keysPressed.current.has('KeyA');
       const right = keysPressed.current.has('ArrowRight') || keysPressed.current.has('KeyD');
       const jump = keysPressed.current.has('ArrowUp') || keysPressed.current.has('KeyW') || keysPressed.current.has('Space');
+      const attack = keysPressed.current.has('KeyM'); // "M" key for sword attack
+      
+      // Handle sword attack
+      if (attack && !attackCooldownRef.current && !isAttackingRef.current) {
+        isAttackingRef.current = true;
+        attackCooldownRef.current = true;
+        
+        // Create sword hitbox in front of player
+        const attackDirection = isFacingRightRef.current ? 1 : -1;
+        swordHitboxRef.current = {
+          x: playerPosRef.current.x + (attackDirection * 30),
+          y: playerPosRef.current.y,
+          width: 40,
+          height: 30,
+          active: true
+        };
+        
+        // Attack duration
+        setTimeout(() => {
+          isAttackingRef.current = false;
+          swordHitboxRef.current.active = false;
+        }, 300);
+        
+        // Attack cooldown
+        setTimeout(() => {
+          attackCooldownRef.current = false;
+        }, 500);
+        
+        // Play attack sound
+        playHit();
+      }
+      
+      // Check for enemies hit by sword attack
+      if (swordHitboxRef.current.active) {
+        enemiesRef.current.forEach((enemy, index) => {
+          const enemyLeft = enemy.x - 20;
+          const enemyRight = enemy.x + 20;
+          const enemyTop = enemy.y - 20;
+          const enemyBottom = enemy.y + 20;
+          
+          const swordLeft = swordHitboxRef.current.x - swordHitboxRef.current.width / 2;
+          const swordRight = swordHitboxRef.current.x + swordHitboxRef.current.width / 2;
+          const swordTop = swordHitboxRef.current.y - swordHitboxRef.current.height / 2;
+          const swordBottom = swordHitboxRef.current.y + swordHitboxRef.current.height / 2;
+          
+          // Check for collision between sword and enemy
+          if (
+            swordRight > enemyLeft &&
+            swordLeft < enemyRight &&
+            swordBottom > enemyTop &&
+            swordTop < enemyBottom
+          ) {
+            // Remove enemy (could also implement a health system instead)
+            enemiesRef.current.splice(index, 1);
+            playSuccess();
+          }
+        });
+      }
+      
+      // Check for hitting hidden blocks with the character's head (jumping into them)
+      obstaclesRef.current.forEach((obstacle, index) => {
+        if (obstacle.type === 'hiddenBlock' && !obstacle.hit) {
+          const obstacleLeft = obstacle.x - obstacle.width / 2;
+          const obstacleRight = obstacle.x + obstacle.width / 2;
+          const obstacleBottom = obstacle.y + obstacle.height / 2;
+          
+          const playerLeft = playerPosRef.current.x - playerSizeRef.current.width / 2;
+          const playerRight = playerPosRef.current.x + playerSizeRef.current.width / 2;
+          const playerTop = playerPosRef.current.y - playerSizeRef.current.height / 2;
+          
+          // Check if player is hitting block from below
+          if (
+            playerRight > obstacleLeft &&
+            playerLeft < obstacleRight &&
+            playerTop <= obstacleBottom &&
+            playerTop > obstacle.y &&
+            playerVelRef.current.y < 0 // Moving upward
+          ) {
+            // Mark the block as hit and revealed
+            obstacle.hit = true;
+            obstacle.revealed = true;
+            obstacle.contentVisible = true;
+            
+            // Bounce player down slightly
+            playerVelRef.current.y = 2;
+            
+            // Play success sound
+            playSuccess();
+            
+            // After a delay, make the content float up and away
+            setTimeout(() => {
+              // Spawn the actual collectible or power-up
+              if (obstacle.content?.startsWith('coin')) {
+                // Add points based on coin value
+                const coinValue = parseInt(obstacle.content.replace('coin', ''));
+                // Here you would add score
+                console.log(`Collected ${coinValue} coins!`);
+              } else if (obstacle.content === 'mushroom') {
+                // Power up the player
+                handlePowerUp(30000); // 30 seconds powerup
+                console.log("Mushroom power-up activated!");
+              } else if (obstacle.content === 'joint') {
+                // Temporary invincibility
+                setIsInvincible(true);
+                setTimeout(() => setIsInvincible(false), 10000);
+                console.log("Joint power-up: 10 seconds invincibility!");
+              }
+              
+              // Remove the content from the block after it's collected
+              setTimeout(() => {
+                obstacle.contentVisible = false;
+              }, 500);
+            }, 300);
+          }
+        }
+      });
+      
+      // Check for checkpoint activation
+      obstaclesRef.current.forEach((obstacle) => {
+        if (obstacle.type === 'checkpoint' && !obstacle.activated) {
+          const distX = Math.abs(playerPosRef.current.x - obstacle.x);
+          const distY = Math.abs(playerPosRef.current.y - obstacle.y);
+          
+          // Check if player is close to checkpoint
+          if (distX < 40 && distY < 60) {
+            // Activate checkpoint
+            obstacle.activated = true;
+            
+            // Update last checkpoint position
+            lastCheckpointRef.current = {
+              x: obstacle.x,
+              y: obstacle.y - 30 // Slightly above the checkpoint
+            };
+            
+            // Play success sound
+            playSuccess();
+            
+            console.log("Checkpoint activated!");
+          }
+        }
+      });
       
       if (left) {
         playerVelRef.current.x = -MOVE_SPEED * deltaTime;
