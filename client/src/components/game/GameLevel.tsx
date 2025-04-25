@@ -26,22 +26,38 @@ export default function GameLevel() {
   
   // Load level data when level changes
   useEffect(() => {
-    // Reset player and collectibles
-    resetPlayer();
-    resetCollectibles();
-    
-    // Get level data for current level
-    const data = getLevelData(currentWorld, currentLevel);
-    setLevelData(data);
-    
-    // Set player spawn point from level data
-    if (data?.playerSpawn) {
-      setPlayerSpawn(data.playerSpawn);
-    }
-    
-    // Set level background color
-    if (data?.backgroundColor) {
-      scene.background = new THREE.Color(data.backgroundColor);
+    try {
+      console.log(`Loading level: World ${currentWorld}, Level ${currentLevel}`);
+      
+      // Reset player and collectibles
+      resetPlayer();
+      resetCollectibles();
+      
+      // Get level data for current level
+      const data = getLevelData(currentWorld, currentLevel);
+      console.log("Level data loaded:", data ? "success" : "failed");
+      setLevelData(data);
+      
+      // Set player spawn point from level data
+      if (data?.playerSpawn) {
+        setPlayerSpawn(data.playerSpawn);
+      }
+      
+      // Set level background color
+      if (data?.backgroundColor) {
+        scene.background = new THREE.Color(data.backgroundColor);
+      }
+    } catch (error) {
+      console.error("Error loading level:", error);
+      // Fallback to default level if there's an error
+      setLevelData({
+        playerSpawn: [0, 1, 0],
+        platforms: [{ position: [0, 0, 0], size: [10, 1, 5], color: "#8B4513" }],
+        bounds: { min: -50, max: 50 },
+        backgroundColor: "#87CEEB",
+        groundColor: "#8B4513",
+        exit: [10, 1, 0]
+      });
     }
   }, [currentLevel, currentWorld, resetPlayer, resetCollectibles, setPlayerSpawn, scene]);
   
