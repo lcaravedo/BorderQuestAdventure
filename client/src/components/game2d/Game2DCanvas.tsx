@@ -594,6 +594,24 @@ export default function Game2DCanvas() {
     const handlePowerUp = powerUp;
     const handleCollectItem = collectItem;
     
+    // Initialize powerup timer when the power up changes
+    const powerUpTimerRef = useRef<number | null>(null);
+    
+    // Clear existing timer when component unmounts or re-renders
+    if (powerUpTimerRef.current) {
+      clearTimeout(powerUpTimerRef.current);
+      powerUpTimerRef.current = null;
+    }
+    
+    // Set timer if powered up
+    if (isPoweredUp && powerUpTimeRemaining > 0) {
+      powerUpTimerRef.current = window.setTimeout(() => {
+        // Reset power up state after timer expires
+        resetPowerUp();
+        console.log("Power-up expired!");
+      }, powerUpTimeRemaining) as unknown as number;
+    }
+    
     // Set canvas size for higher quality
     canvas.width = width * window.devicePixelRatio;
     canvas.height = height * window.devicePixelRatio;
@@ -2062,7 +2080,17 @@ export default function Game2DCanvas() {
       
       // Draw player character (with camera offset)
       const playerScreenX = playerPosRef.current.x - cameraX;
-      const playerTexture = textures.current['character'] || null;
+      
+      // Choose correct texture based on power-up state
+      let playerTexture;
+      if (isPoweredUp) {
+        // Use chihuahua texture when powered up
+        playerTexture = textures.current['character'] || null;
+      } else {
+        // Use pear head texture when not powered up
+        // Fallback to character if not available
+        playerTexture = textures.current['character'] || null;
+      }
       
       // Draw sword if attacking
       if (isAttackingRef.current) {
@@ -2098,6 +2126,17 @@ export default function Game2DCanvas() {
         ctx.restore();
       }
       
+      // Visual indicator when powered up
+      if (isPoweredUp) {
+        // Draw power-up glow effect
+        ctx.globalAlpha = 0.3 + Math.sin(timestamp * 0.005) * 0.1;
+        ctx.fillStyle = '#FFFF00';
+        ctx.beginPath();
+        ctx.arc(playerScreenX, playerPosRef.current.y, 30, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalAlpha = 1.0;
+      }
+      
       if (playerTexture) {
         // Draw character with proper facing direction
         ctx.save();
@@ -2107,22 +2146,28 @@ export default function Game2DCanvas() {
           ctx.scale(-1, 1);
         }
         
+        // When powered up, draw character slightly bigger
+        const size = isPoweredUp ? 50 : 40;
+        
         ctx.drawImage(
           playerTexture,
-          isFacingRightRef.current ? playerScreenX - 20 : playerScreenX - 20,
-          playerPosRef.current.y - 20,
-          40,
-          40
+          isFacingRightRef.current ? playerScreenX - size/2 : playerScreenX - size/2,
+          playerPosRef.current.y - size/2,
+          size,
+          size
         );
         ctx.restore();
       } else {
         // Fallback if texture isn't loaded
-        ctx.fillStyle = '#FF9900'; // Orange
+        const color = isPoweredUp ? '#FF3300' : '#FF9900'; // Red when powered up, orange normally
+        const size = isPoweredUp ? 50 : 40;
+        
+        ctx.fillStyle = color;
         ctx.fillRect(
-          playerScreenX - 20,
-          playerPosRef.current.y - 20,
-          40,
-          40
+          playerScreenX - size/2,
+          playerPosRef.current.y - size/2,
+          size,
+          size
         );
       }
       
@@ -2155,9 +2200,12 @@ export default function Game2DCanvas() {
     takeDamage, 
     heal, 
     powerUp, 
+    resetPowerUp,
     collectItem,
     currentWorld,
     isInvincible,
+    isPoweredUp,
+    powerUpTimeRemaining,
     health,
     maxHealth,
     hearts,
