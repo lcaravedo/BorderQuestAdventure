@@ -25,15 +25,24 @@ export default function LevelSelect() {
   
   // Handle level selection
   const handleLevelSelect = (worldIndex: number, levelIndex: number) => {
+    console.log(`Selecting level: World ${worldIndex}, Level ${levelIndex}`);
+    
     // Check if level is unlocked
-    if (!isLevelUnlocked(worldIndex, levelIndex)) return;
+    if (!isLevelUnlocked(worldIndex, levelIndex)) {
+      console.log("Level is locked!");
+      return;
+    }
     
     // Set the current level and world
+    console.log("Setting current world and level...");
     setCurrentWorld(worldIndex);
     setCurrentLevel(levelIndex);
     
-    // Start the game
-    start();
+    // Start the game with a slight delay to ensure state is updated
+    console.log("Starting game...");
+    setTimeout(() => {
+      setPhase("playing");
+    }, 100);
   };
   
   // Check if a level is unlocked
