@@ -103,10 +103,13 @@ export default function GameMenu({ showGameOver = false }: GameMenuProps) {
                 >
                   <Button 
                     variant="default" 
-                    className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white"
-                    onClick={() => setPhase("selecting")}
+                    className="w-full py-6 text-xl font-bold bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white border-4 border-yellow-300"
+                    onClick={() => {
+                      console.log("PLAY button clicked!");
+                      setPhase("selecting");
+                    }}
                   >
-                    PLAY
+                    PLAY GAME
                   </Button>
                 </motion.div>
                 
