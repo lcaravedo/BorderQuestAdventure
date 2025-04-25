@@ -5,7 +5,7 @@ import GameMenu from "./components/ui/game-menu";
 import LevelSelect from "./components/ui/level-select";
 import GameUI from "./components/ui/game-ui";
 import SoundManager from "./components/game/SoundManager";
-import Game2DCanvas from "./components/game2d/Game2DCanvas";
+import GameCanvasSimple from "./components/game2d/GameCanvas.simple";
 import { Controls } from "./lib/consts";
 import "@fontsource/inter";
 
@@ -124,7 +124,7 @@ function App() {
         {/* Active gameplay - Using 2D game now */}
         {phase === "playing" && (
           <div className="game-wrapper">
-            <Game2DCanvas />
+            <GameCanvasSimple />
             <GameUI />
           </div>
         )}
