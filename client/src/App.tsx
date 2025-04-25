@@ -1,14 +1,11 @@
-import { Canvas } from "@react-three/fiber";
-import { Suspense, useEffect, useState } from "react";
-import { KeyboardControls } from "@react-three/drei";
+import { useEffect, useState } from "react";
 import { useAudio } from "./lib/stores/useAudio";
 import { useGame } from "./lib/stores/useGame";
-import { Howl } from "howler";
 import GameMenu from "./components/ui/game-menu";
 import LevelSelect from "./components/ui/level-select";
 import GameUI from "./components/ui/game-ui";
-import GameLevel from "./components/game/GameLevel";
 import SoundManager from "./components/game/SoundManager";
+import Game2DCanvas from "./components/game2d/Game2DCanvas";
 import { Controls } from "./lib/consts";
 import "@fontsource/inter";
 
@@ -91,7 +88,7 @@ function App() {
 
   return (
     <div className="w-screen h-screen relative overflow-hidden">
-      <KeyboardControls map={keyboardMap}>
+      <div className="game-container">
         {/* Game menu with debug overlay */}
         {phase === "ready" && (
           <div className="relative w-full h-full">
@@ -108,6 +105,15 @@ function App() {
               >
                 Force Level Select
               </button>
+              <button 
+                className="mt-1 ml-2 px-2 py-1 bg-blue-700 text-white rounded"
+                onClick={() => {
+                  console.log("Emergency play button clicked!");
+                  window.dispatchEvent(new CustomEvent('changePhase', { detail: 'playing' }));
+                }}
+              >
+                QUICK START
+              </button>
             </div>
           </div>
         )}
@@ -115,37 +121,12 @@ function App() {
         {/* Level selection screen */}
         {phase === "selecting" && <LevelSelect />}
         
-        {/* Active gameplay */}
+        {/* Active gameplay - Using 2D game now */}
         {phase === "playing" && (
-          <>
-            <Canvas
-              shadows
-              camera={{
-                position: [0, 5, 10],
-                fov: 60,
-                near: 0.1,
-                far: 1000
-              }}
-              gl={{
-                antialias: true,
-                pixelRatio: window.devicePixelRatio
-              }}
-            >
-              <color attach="background" args={["#87CEEB"]} />
-              <ambientLight intensity={0.8} />
-              <directionalLight 
-                position={[10, 10, 5]} 
-                intensity={1} 
-                castShadow 
-                shadow-mapSize={[1024, 1024]}
-              />
-              
-              <Suspense fallback={null}>
-                <GameLevel />
-              </Suspense>
-            </Canvas>
+          <div className="game-wrapper">
+            <Game2D />
             <GameUI />
-          </>
+          </div>
         )}
         
         {/* Game over screen */}
@@ -153,7 +134,7 @@ function App() {
         
         {/* Sound manager component for handling game audio */}
         <SoundManager />
-      </KeyboardControls>
+      </div>
     </div>
   );
 }
