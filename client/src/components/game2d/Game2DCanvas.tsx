@@ -16,7 +16,7 @@ export default function Game2DCanvas() {
   
   // Game state
   const { phase } = useGame();
-  const { currentWorld, currentLevel } = useLevels();
+  const { currentWorld, currentLevel, unlockNextLevel, setCurrentLevel } = useLevels();
   const { 
     resetPlayer,
     resetGame, 
@@ -498,10 +498,27 @@ export default function Game2DCanvas() {
         );
       });
       
-      // Draw exit portal (with camera offset)
-      ctx.fillStyle = '#4422FF';
-      ctx.globalAlpha = 0.7;
-      ctx.fillRect(exit[0] - 25 - cameraX, exit[1] - 40, 50, 80);
+      // Draw border fence checkpoint (with camera offset)
+      const fenceX = exit[0] - cameraX;
+      const fenceY = exit[1] - 100; // Position at ground level but taller
+      
+      // Draw fence posts
+      ctx.fillStyle = '#888888';
+      ctx.fillRect(fenceX - 5, fenceY, 10, 100);
+      ctx.fillRect(fenceX - 5 + 50, fenceY, 10, 100);
+      
+      // Draw horizontal bars
+      ctx.fillRect(fenceX, fenceY + 20, 45, 5);
+      ctx.fillRect(fenceX, fenceY + 50, 45, 5);
+      ctx.fillRect(fenceX, fenceY + 80, 45, 5);
+      
+      // Draw "BORDER" text
+      ctx.fillStyle = '#FFFFFF';
+      ctx.font = '16px "Press Start 2P", monospace';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'top';
+      ctx.fillText('BORDER', fenceX + 25, fenceY - 25);
+      
       ctx.globalAlpha = 1.0;
       
       // Draw collectibles from level data (with camera offset)
@@ -722,6 +739,59 @@ export default function Game2DCanvas() {
       // Update position
       playerPosRef.current.x += playerVelRef.current.x;
       playerPosRef.current.y += playerVelRef.current.y;
+      
+      // Check if player has fallen into a pit (below the screen)
+      if (playerPosRef.current.y > height + 100) {
+        // Player fell into a pit, lose a life and reset position
+        playHit();
+        takeDamage(3); // Lose all health, which will decrease one life
+        
+        // Reset player position to spawn
+        playerPosRef.current.x = 100;
+        playerPosRef.current.y = height - 100;
+        playerVelRef.current.x = 0;
+        playerVelRef.current.y = 0;
+        setPosition([100, height - 100, 0]);
+        
+        // Reset camera position
+        cameraOffsetRef.current.x = 0;
+      }
+      
+      // Check if player has reached the border fence (level exit)
+      const distanceToExit = Math.abs(playerPosRef.current.x - exit[0]);
+      const distanceToExitY = Math.abs(playerPosRef.current.y - exit[1]);
+      
+      if (distanceToExit < 30 && distanceToExitY < 100) {
+        // Player reached the exit/border
+        playSuccess();
+        
+        // Unlock the next level
+        unlockNextLevel();
+        
+        // Determine next level
+        let nextLevel = currentLevel;
+        let nextWorld = currentWorld;
+        
+        if (currentLevel < 4) { // If not the last level in the world
+          nextLevel = currentLevel + 1;
+        } else if (currentWorld < 4) { // If not the last world
+          nextWorld = currentWorld + 1;
+          nextLevel = 0;
+        } else {
+          // Player beat the game - for now just loop back to the beginning
+          nextWorld = 0;
+          nextLevel = 0;
+        }
+        
+        // Set next level after a short delay
+        setTimeout(() => {
+          setCurrentLevel(nextLevel);
+          // If we're changing worlds
+          if (nextWorld !== currentWorld) {
+            useLevels.getState().setCurrentWorld(nextWorld);
+          }
+        }, 1000);
+      }
       
       // Update camera to follow player
       if (playerPosRef.current.x > width / 3) {
