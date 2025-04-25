@@ -187,7 +187,8 @@ export default function Game2DCanvas() {
     const numPlatforms = 5 + Math.floor(Math.random() * 5); // 5-10 platforms
     for (let i = 0; i < numPlatforms; i++) {
       const platformX = 300 + (i * (levelLength / numPlatforms));
-      const platformY = height - 150 - Math.random() * 200;
+      // Lower the platform heights to make them more reachable with jumps
+      const platformY = height - 150 - Math.random() * 100; // Reduced max height
       const platformWidth = 100 + Math.random() * 100;
       const platformHeight = 20 + Math.random() * 10;
       
@@ -333,10 +334,11 @@ export default function Game2DCanvas() {
       });
     }
     
-    // Generate tequila-drinking Mexican checkpoint statues
-    const numCheckpoints = 2 + Math.floor(Math.random() * 2); // 2-4 checkpoints per level
+    // Generate a single tequila-drinking Mexican checkpoint statue per level
+    const numCheckpoints = 1; // Just 1 checkpoint per level as requested
     for (let i = 0; i < numCheckpoints; i++) {
-      const checkpointX = 800 + (i * (levelLength / (numCheckpoints + 1))); // Distribute evenly
+      // Place checkpoint halfway through the level
+      const checkpointX = levelLength / 2;
       const checkpointY = height - 90; // On the ground
       
       obstacles.push({
@@ -394,7 +396,7 @@ export default function Game2DCanvas() {
                      currentWorld === 2 ? '#D2B48C' : // Tan
                      currentWorld === 3 ? '#A9A9A9' : // Dark gray
                      '#8B4513', // Default to brown
-        exit: [levelLength - 100, height - 100, 0]
+        exit: [levelLength - 100, height - 70, 0] // Border fence positioned on the ground
       };
       
       setLevelData({...data, ...baseData});
@@ -1996,6 +1998,40 @@ export default function Game2DCanvas() {
       // Draw player character (with camera offset)
       const playerScreenX = playerPosRef.current.x - cameraX;
       const playerTexture = textures.current['character'] || null;
+      
+      // Draw sword if attacking
+      if (isAttackingRef.current) {
+        // Determine sword position based on facing direction
+        const swordX = playerScreenX + (isFacingRightRef.current ? 30 : -30);
+        const swordY = playerPosRef.current.y;
+        
+        // Save context for rotation
+        ctx.save();
+        
+        // Translate to sword position for rotation
+        ctx.translate(swordX, swordY);
+        
+        // Rotate sword based on direction
+        if (isFacingRightRef.current) {
+          ctx.rotate(Math.PI / 4); // 45 degrees
+        } else {
+          ctx.rotate(-Math.PI / 4); // -45 degrees
+        }
+        
+        // Draw sword
+        ctx.fillStyle = '#CCCCCC'; // Silver blade
+        ctx.fillRect(-5, -30, 10, 40); // Blade
+        
+        ctx.fillStyle = '#8B4513'; // Brown handle
+        ctx.fillRect(-5, 10, 10, 15); // Handle
+        
+        // Draw shine on blade
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillRect(-2, -25, 2, 30);
+        
+        // Restore context
+        ctx.restore();
+      }
       
       if (playerTexture) {
         // Draw character with proper facing direction
