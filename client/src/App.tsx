@@ -124,7 +124,7 @@ function App() {
         {/* Active gameplay - Using 2D game now */}
         {phase === "playing" && (
           <div className="game-wrapper">
-            <Game2D />
+            <Game2DCanvas />
             <GameUI />
           </div>
         )}
