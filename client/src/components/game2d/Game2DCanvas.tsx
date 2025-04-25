@@ -235,20 +235,21 @@ export default function Game2DCanvas() {
         textures.current['playerPowered'] : 
         textures.current['player'];
       
+      // Save state for transformations
+      ctx.save();
+      if (!isFacingRightRef.current) {
+        ctx.translate(playerX + playerSizeRef.current.width/2, 0);
+        ctx.scale(-1, 1);
+        ctx.translate(-(playerX + playerSizeRef.current.width/2), 0);
+      }
+      
+      // If powered up, make the player larger
+      const powerUpScale = isPoweredUp ? 1.3 : 1.0;
+      const drawWidth = playerSizeRef.current.width * powerUpScale;
+      const drawHeight = playerSizeRef.current.height * powerUpScale;
+      
       if (playerTexture) {
-        // Draw with sprite flipping based on direction
-        ctx.save();
-        if (!isFacingRightRef.current) {
-          ctx.translate(playerX + playerSizeRef.current.width/2, 0);
-          ctx.scale(-1, 1);
-          ctx.translate(-(playerX + playerSizeRef.current.width/2), 0);
-        }
-        
-        // If powered up, make the player larger
-        const powerUpScale = isPoweredUp ? 1.3 : 1.0;
-        const drawWidth = playerSizeRef.current.width * powerUpScale;
-        const drawHeight = playerSizeRef.current.height * powerUpScale;
-        
+        // Draw with sprite if texture loaded
         ctx.drawImage(
           playerTexture,
           playerX - (drawWidth - playerSizeRef.current.width) / 2,
@@ -256,61 +257,74 @@ export default function Game2DCanvas() {
           drawWidth,
           drawHeight
         );
-        
-        // If attacking, draw sword hitbox
-        if (isAttackingRef.current) {
-          ctx.fillStyle = '#CCCCCC';
-          ctx.fillRect(
-            swordHitboxRef.current.x - cameraOffsetRef.current.x,
-            swordHitboxRef.current.y - swordHitboxRef.current.height / 2,
-            swordHitboxRef.current.width,
-            swordHitboxRef.current.height
-          );
-        }
-        
-        ctx.restore();
-        
-        // If invincible, draw flashing effect
-        if (isInvincible && Math.floor(timestamp / 100) % 2 === 0) {
-          ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
-          ctx.fillRect(
-            playerX - 5,
-            playerY - playerSizeRef.current.height / 2 - 5,
-            playerSizeRef.current.width + 10,
-            playerSizeRef.current.height + 10
-          );
-        }
-        
-        // If powered up, draw glow effect
-        if (isPoweredUp) {
-          const glowSize = 15 + Math.sin(timestamp * 0.01) * 5;
-          const gradient = ctx.createRadialGradient(
-            playerX + playerSizeRef.current.width / 2,
-            playerY,
-            0,
-            playerX + playerSizeRef.current.width / 2,
-            playerY,
-            playerSizeRef.current.width / 2 + glowSize
-          );
-          gradient.addColorStop(0, 'rgba(255, 255, 0, 0.7)');
-          gradient.addColorStop(1, 'rgba(255, 255, 0, 0)');
-          
-          ctx.fillStyle = gradient;
-          ctx.fillRect(
-            playerX - glowSize,
-            playerY - playerSizeRef.current.height / 2 - glowSize,
-            playerSizeRef.current.width + glowSize * 2,
-            playerSizeRef.current.height + glowSize * 2
-          );
-        }
       } else {
-        // Fallback if texture isn't loaded
-        ctx.fillStyle = isPoweredUp ? '#FFFF00' : '#FF0000';
+        // Improved fallback rendering - more detailed player character
+        const baseX = playerX - drawWidth / 2;
+        const baseY = playerY - drawHeight / 2;
+        
+        // Draw body
+        ctx.fillStyle = isPoweredUp ? '#FFDA00' : '#CD7F32'; // Gold or brown
+        ctx.fillRect(baseX, baseY, drawWidth, drawHeight);
+        
+        // Draw eyes
+        ctx.fillStyle = '#000000';
+        const eyeSize = drawWidth * 0.15;
+        ctx.fillRect(baseX + drawWidth * 0.6, baseY + drawHeight * 0.3, eyeSize, eyeSize);
+        
+        // Draw mouth
+        ctx.fillStyle = '#AA0000';
+        ctx.fillRect(baseX + drawWidth * 0.4, baseY + drawHeight * 0.7, drawWidth * 0.4, drawHeight * 0.1);
+        
+        // Draw ears
+        ctx.fillStyle = isPoweredUp ? '#FFC800' : '#8B4513';
+        ctx.fillRect(baseX - drawWidth * 0.1, baseY, drawWidth * 0.2, drawHeight * 0.3);
+        ctx.fillRect(baseX + drawWidth * 0.9, baseY, drawWidth * 0.2, drawHeight * 0.3);
+      }
+      
+      // If attacking, draw sword hitbox
+      if (isAttackingRef.current) {
+        ctx.fillStyle = '#CCCCCC';
         ctx.fillRect(
-          playerX - playerSizeRef.current.width / 2,
-          playerY - playerSizeRef.current.height / 2,
-          playerSizeRef.current.width,
-          playerSizeRef.current.height
+          swordHitboxRef.current.x - cameraOffsetRef.current.x,
+          swordHitboxRef.current.y - swordHitboxRef.current.height / 2,
+          swordHitboxRef.current.width,
+          swordHitboxRef.current.height
+        );
+      }
+      
+      ctx.restore();
+      
+      // If invincible, draw flashing effect
+      if (isInvincible && Math.floor(timestamp / 100) % 2 === 0) {
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+        ctx.fillRect(
+          playerX - drawWidth/2 - 5,
+          playerY - drawHeight/2 - 5,
+          drawWidth + 10,
+          drawHeight + 10
+        );
+      }
+      
+      // If powered up, draw glow effect
+      if (isPoweredUp) {
+        const glowSize = 15 + Math.sin(timestamp * 0.01) * 5;
+        const gradient = ctx.createRadialGradient(
+          playerX,
+          playerY,
+          0,
+          playerX,
+          playerY,
+          drawWidth/2 + glowSize
+        );
+        gradient.addColorStop(0, 'rgba(255, 255, 0, 0.7)');
+        gradient.addColorStop(1, 'rgba(255, 255, 0, 0)');
+        
+        ctx.fillStyle = gradient;
+        ctx.fillRect(
+          playerX - drawWidth/2 - glowSize,
+          playerY - drawHeight/2 - glowSize,
+          drawWidth + glowSize * 2,
+          drawHeight + glowSize * 2
         );
       }
     };
@@ -568,18 +582,75 @@ export default function Game2DCanvas() {
               30
             );
           } else {
-            // Fallback if texture isn't loaded
-            ctx.fillStyle = collectible.type === 'bone' ? '#FFFFFF' : 
-                          collectible.type === 'visa' ? '#66EE66' : 
-                          '#FFDD44';
-            ctx.beginPath();
-            ctx.arc(
+            // Improved fallback for collectibles when textures aren't loaded
+            const yPos = collectibleY + Math.sin(timestamp * 0.003) * 5; // Hover animation
+            
+            if (collectible.type === 'bone') {
+              // Draw a bone
+              ctx.fillStyle = '#F5F5F5';
+              // Main bone
+              ctx.fillRect(collectibleX - 15, yPos - 3, 30, 6);
+              // Bone ends
+              ctx.fillStyle = '#FFFFFF';
+              ctx.beginPath();
+              ctx.ellipse(collectibleX - 15, yPos, 5, 8, 0, 0, Math.PI * 2);
+              ctx.fill();
+              ctx.beginPath();
+              ctx.ellipse(collectibleX + 15, yPos, 5, 8, 0, 0, Math.PI * 2);
+              ctx.fill();
+            } 
+            else if (collectible.type === 'visa') {
+              // Draw a visa document
+              ctx.fillStyle = '#006633'; // Green background
+              ctx.fillRect(collectibleX - 15, yPos - 10, 30, 20);
+              
+              // Card details
+              ctx.fillStyle = '#FFDD00'; // Gold chip
+              ctx.fillRect(collectibleX - 10, yPos - 7, 8, 6);
+              
+              // Card text lines
+              ctx.fillStyle = '#FFFFFF';
+              ctx.fillRect(collectibleX - 8, yPos + 2, 20, 2);
+              ctx.fillRect(collectibleX - 8, yPos + 5, 15, 2);
+            }
+            else if (collectible.type === 'snack') {
+              // Draw a snack
+              ctx.fillStyle = '#FF6633'; // Orange-red wrapper
+              ctx.fillRect(collectibleX - 12, yPos - 8, 24, 16);
+              
+              // Wrapper details
+              ctx.fillStyle = '#FFFF00'; // Yellow logo
+              ctx.fillRect(collectibleX - 8, yPos - 5, 16, 10);
+              
+              // Snack name
+              ctx.fillStyle = '#000000';
+              ctx.fillRect(collectibleX - 6, yPos - 3, 12, 2);
+              ctx.fillRect(collectibleX - 6, yPos, 12, 2);
+            }
+            else {
+              // Default fallback
+              ctx.fillStyle = '#FFDD44';
+              ctx.beginPath();
+              ctx.arc(collectibleX, yPos, 15, 0, Math.PI * 2);
+              ctx.fill();
+            }
+            
+            // Add glow effect to all collectibles
+            const glowSize = 5 + Math.sin(timestamp * 0.01) * 2;
+            const gradient = ctx.createRadialGradient(
               collectibleX,
-              collectibleY + Math.sin(timestamp * 0.003) * 5,
-              15,
-              0,
-              Math.PI * 2
+              yPos,
+              10,
+              collectibleX,
+              yPos,
+              20 + glowSize
             );
+            gradient.addColorStop(0, 'rgba(255, 255, 255, 0)');
+            gradient.addColorStop(1, 'rgba(255, 255, 255, 0.2)');
+            
+            ctx.fillStyle = gradient;
+            ctx.beginPath();
+            ctx.arc(collectibleX, yPos, 20 + glowSize, 0, Math.PI * 2);
             ctx.fill();
           }
         });
@@ -635,20 +706,116 @@ export default function Game2DCanvas() {
           
           ctx.restore();
         } else {
-          // Fallback if texture isn't loaded
-          ctx.fillStyle = enemy.isBoss ? '#FF0000' : '#666666';
-          ctx.fillRect(enemyX - 20, enemyY - 20, 40, 40);
+          // Fallback if texture isn't loaded - draw a more detailed enemy
+          ctx.save();
           
-          // If it's a boss, draw a crown
-          if (enemy.isBoss) {
-            ctx.fillStyle = '#FFDD00';
+          // Enemy type-specific details
+          if (enemy.type === 'cat') {
+            // Draw a cat-like shape
+            ctx.fillStyle = '#555555';
+            ctx.fillRect(enemyX - 20, enemyY - 20, 40, 40); // Body
+            
+            // Ears
+            ctx.fillStyle = '#333333';
             ctx.beginPath();
-            ctx.moveTo(enemyX - 10, enemyY - 25);
-            ctx.lineTo(enemyX, enemyY - 35);
-            ctx.lineTo(enemyX + 10, enemyY - 25);
+            ctx.moveTo(enemyX - 20, enemyY - 20);
+            ctx.lineTo(enemyX - 12, enemyY - 30);
+            ctx.lineTo(enemyX - 5, enemyY - 20);
             ctx.closePath();
             ctx.fill();
+            
+            ctx.beginPath();
+            ctx.moveTo(enemyX + 5, enemyY - 20);
+            ctx.lineTo(enemyX + 12, enemyY - 30);
+            ctx.lineTo(enemyX + 20, enemyY - 20);
+            ctx.closePath();
+            ctx.fill();
+            
+            // Eyes
+            ctx.fillStyle = '#FFCC00';
+            ctx.fillRect(enemyX - 15, enemyY - 10, 8, 8);
+            ctx.fillRect(enemyX + 7, enemyY - 10, 8, 8);
+            
+            // Pupils
+            ctx.fillStyle = '#000000';
+            ctx.fillRect(enemyX - 12, enemyY - 7, 4, 4);
+            ctx.fillRect(enemyX + 10, enemyY - 7, 4, 4);
+          } else if (enemy.type === 'drone') {
+            // Draw a drone-like shape
+            ctx.fillStyle = '#444444';
+            ctx.fillRect(enemyX - 15, enemyY - 5, 30, 10); // Body
+            
+            // Propellers
+            ctx.fillStyle = '#666666';
+            ctx.fillRect(enemyX - 20, enemyY - 2, 8, 4);
+            ctx.fillRect(enemyX + 12, enemyY - 2, 8, 4);
+            
+            // Light
+            ctx.fillStyle = '#FF0000';
+            ctx.beginPath();
+            ctx.arc(enemyX, enemyY - 10, 3, 0, Math.PI * 2);
+            ctx.fill();
+          } else if (enemy.isBoss) {
+            // Draw a boss-like shape
+            ctx.fillStyle = '#880000';
+            ctx.fillRect(enemyX - 25, enemyY - 25, 50, 50); // Larger body
+            
+            // Eyes
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillRect(enemyX - 15, enemyY - 10, 8, 8);
+            ctx.fillRect(enemyX + 7, enemyY - 10, 8, 8);
+            
+            // Angry eyebrows
+            ctx.fillStyle = '#000000';
+            ctx.beginPath();
+            ctx.moveTo(enemyX - 20, enemyY - 14);
+            ctx.lineTo(enemyX - 5, enemyY - 18);
+            ctx.lineTo(enemyX - 5, enemyY - 14);
+            ctx.closePath();
+            ctx.fill();
+            
+            ctx.beginPath();
+            ctx.moveTo(enemyX + 20, enemyY - 14);
+            ctx.lineTo(enemyX + 5, enemyY - 18);
+            ctx.lineTo(enemyX + 5, enemyY - 14);
+            ctx.closePath();
+            ctx.fill();
+            
+            // Crown
+            ctx.fillStyle = '#FFDD00';
+            ctx.beginPath();
+            ctx.moveTo(enemyX - 15, enemyY - 30);
+            ctx.lineTo(enemyX - 8, enemyY - 40);
+            ctx.lineTo(enemyX, enemyY - 32);
+            ctx.lineTo(enemyX + 8, enemyY - 40);
+            ctx.lineTo(enemyX + 15, enemyY - 30);
+            ctx.closePath();
+            ctx.fill();
+            
+            // Health bar
+            const healthPercentage = enemy.health / enemy.maxHealth;
+            ctx.fillStyle = '#333333';
+            ctx.fillRect(enemyX - 30, enemyY - 50, 60, 6);
+            ctx.fillStyle = '#FF0000';
+            ctx.fillRect(enemyX - 30, enemyY - 50, 60 * healthPercentage, 6);
+          } else {
+            // Default enemy shape (for other types)
+            ctx.fillStyle = '#777777';
+            ctx.fillRect(enemyX - 20, enemyY - 20, 40, 40); // Body
+            
+            // Eyes
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillRect(enemyX - 12, enemyY - 10, 7, 7);
+            ctx.fillRect(enemyX + 5, enemyY - 10, 7, 7);
+            
+            // Draw type indicator
+            ctx.fillStyle = enemy.type === 'snake' ? '#00AA00' : 
+                          enemy.type === 'shark' ? '#0055AA' : 
+                          enemy.type === 'frog' ? '#00AA55' : '#AA5500';
+            ctx.fillRect(enemyX - 5, enemyY + 5, 10, 10);
           }
+          
+          ctx.restore();
         }
       });
       
