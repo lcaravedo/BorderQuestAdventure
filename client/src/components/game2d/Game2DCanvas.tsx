@@ -304,14 +304,34 @@ export default function Game2DCanvas() {
           );
         }
       } else {
-        // Fallback if texture isn't loaded
-        ctx.fillStyle = isPoweredUp ? '#FFFF00' : '#FF0000';
-        ctx.fillRect(
-          playerX - playerSizeRef.current.width / 2,
-          playerY - playerSizeRef.current.height / 2,
-          playerSizeRef.current.width,
-          playerSizeRef.current.height
-        );
+        // Fallback if texture isn't loaded - simple chihuahua shape
+        const baseX = playerX - playerSizeRef.current.width / 2;
+        const baseY = playerY - playerSizeRef.current.height / 2;
+        const width = playerSizeRef.current.width;
+        const height = playerSizeRef.current.height;
+        
+        // Body (tan/brown for chihuahua color)
+        ctx.fillStyle = isPoweredUp ? '#FFCC00' : '#CD853F';
+        ctx.fillRect(baseX, baseY, width, height);
+        
+        // Eyes (dark)
+        ctx.fillStyle = '#000000';
+        const eyeSize = width * 0.1;
+        ctx.fillRect(baseX + width * 0.7, baseY + height * 0.3, eyeSize, eyeSize);
+        
+        // Ears - small triangular ears
+        ctx.fillStyle = isPoweredUp ? '#FFC107' : '#8B4513';
+        ctx.beginPath();
+        ctx.moveTo(baseX, baseY);
+        ctx.lineTo(baseX, baseY - height * 0.2);
+        ctx.lineTo(baseX + width * 0.2, baseY);
+        ctx.fill();
+        
+        ctx.beginPath();
+        ctx.moveTo(baseX + width, baseY);
+        ctx.lineTo(baseX + width, baseY - height * 0.2);
+        ctx.lineTo(baseX + width * 0.8, baseY);
+        ctx.fill();
       }
     };
     
