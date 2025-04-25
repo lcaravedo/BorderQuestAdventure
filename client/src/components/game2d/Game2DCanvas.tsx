@@ -187,8 +187,8 @@ export default function Game2DCanvas() {
     const numPlatforms = 5 + Math.floor(Math.random() * 5); // 5-10 platforms
     for (let i = 0; i < numPlatforms; i++) {
       const platformX = 300 + (i * (levelLength / numPlatforms));
-      // Lower the platform heights to make them more reachable with jumps
-      const platformY = height - 150 - Math.random() * 100; // Reduced max height
+      // Make platforms much more reachable
+      const platformY = height - 150 - Math.random() * 50; // Much lower height range
       const platformWidth = 100 + Math.random() * 100;
       const platformHeight = 20 + Math.random() * 10;
       
@@ -302,7 +302,7 @@ export default function Game2DCanvas() {
     const numCollectibles = 5 + Math.floor(Math.random() * 5); // 5-10 collectibles
     for (let i = 0; i < numCollectibles; i++) {
       const collectibleX = 250 + (i * (levelLength / numCollectibles));
-      const collectibleY = height - 100 - Math.random() * 200;
+      const collectibleY = height - 100 - Math.random() * 80; // Lower height, more accessible
       const collectibleType = collectibleTypes[Math.floor(Math.random() * collectibleTypes.length)];
       
       obstacles.push({
@@ -320,7 +320,7 @@ export default function Game2DCanvas() {
     
     for (let i = 0; i < numHiddenBlocks; i++) {
       const blockX = 400 + (i * (levelLength / numHiddenBlocks));
-      const blockY = height - 150 - Math.random() * 180; // At different heights
+      const blockY = height - 150 - Math.random() * 70; // Much lower heights for accessibility
       const contentType = powerUpTypes[Math.floor(Math.random() * powerUpTypes.length)];
       
       obstacles.push({
@@ -495,25 +495,40 @@ export default function Game2DCanvas() {
     ctx.textBaseline = 'middle';
     ctx.fillText(`Score: ${score}`, width/2, 25);
     
-    // Draw health and lives on left side
+    // Draw world and level info at top right
     ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
-    ctx.fillRect(10, 10, 200, 60);
+    ctx.fillRect(width - 210, 10, 200, 30);
+    
+    ctx.fillStyle = '#FFFFFF';
+    ctx.font = '12px "Press Start 2P", monospace';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(`World ${currentWorld+1}-${currentLevel+1}`, width - 110, 25);
+    
+    // Draw health and lives - now separated with health at top and lives below
+    // Health section
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+    ctx.fillRect(10, 10, 200, 30); // Shorter box just for health
     
     // Draw health bar
     ctx.fillStyle = '#666666';
-    ctx.fillRect(20, 20, 150, 15);
+    ctx.fillRect(20, 18, 150, 15);
     
     // Draw current health
     ctx.fillStyle = '#FF3333';
     const healthWidth = (health / maxHealth) * 150;
-    ctx.fillRect(20, 20, healthWidth, 15);
+    ctx.fillRect(20, 18, healthWidth, 15);
     
     // Draw health text
     ctx.fillStyle = '#FFFFFF';
     ctx.font = '12px "Press Start 2P", monospace';
     ctx.textAlign = 'left';
     ctx.textBaseline = 'top';
-    ctx.fillText(`HP: ${health}/${maxHealth}`, 25, 22);
+    ctx.fillText(`HP: ${health}/${maxHealth}`, 25, 20);
+    
+    // Lives section - now moved below health
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+    ctx.fillRect(10, 50, 200, 30); // Separate box for lives below health
     
     // Draw lives (hearts)
     for (let i = 0; i < hearts; i++) {
@@ -521,7 +536,7 @@ export default function Game2DCanvas() {
       // Draw heart shape
       ctx.beginPath();
       const heartX = 20 + (i * 30);
-      const heartY = 45;
+      const heartY = 65;
       
       // Heart shape using bezier curves
       ctx.moveTo(heartX, heartY + 5);
@@ -535,7 +550,8 @@ export default function Game2DCanvas() {
     // Draw lives text
     ctx.fillStyle = '#FFFFFF';
     ctx.font = '12px "Press Start 2P", monospace';
-    ctx.fillText(`Lives: ${hearts}`, 110, 45);
+    ctx.textAlign = 'left';
+    ctx.fillText(`Lives: ${hearts}`, 110, 60);
     
     // Draw pause instructions
     if (isPaused) {
