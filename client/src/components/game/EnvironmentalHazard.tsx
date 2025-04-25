@@ -36,12 +36,12 @@ export default function EnvironmentalHazard({
   const [playerPosition, setPlayerPosition] = useState([0, 0, 0]);
   const [particles, setParticles] = useState<THREE.BufferGeometry | null>(null);
   
-  // Texture based on hazard type
+  // Texture based on hazard type - using SVG instead of PNG
   const textureMap = {
-    sandstorm: "/textures/sandstorm.png",
-    jungle_trap: "/textures/jungle_trap.png",
-    drone: "/textures/drone.png",
-    spotlight: "/textures/spotlight.png"
+    sandstorm: "/textures/sandstorm.svg",
+    jungle_trap: "/textures/jungle_trap.svg",
+    drone: "/textures/drone.svg",
+    spotlight: "/textures/spotlight.svg"
   };
   
   const texture = useTexture(textureMap[type]);
