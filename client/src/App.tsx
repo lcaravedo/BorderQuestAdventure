@@ -49,57 +49,111 @@ function App() {
     // Show canvas after everything is loaded
     setShowCanvas(true);
   }, [setBackgroundMusic, setHitSound, setSuccessSound]);
+  
+  // Add a listener for manual phase changes from our debug overlay
+  const { setPhase } = useGame() as any;
+  useEffect(() => {
+    const handlePhaseChange = (e: CustomEvent) => {
+      console.log("Custom phase change event:", e.detail);
+      setPhase(e.detail);
+    };
+    
+    window.addEventListener('changePhase', handlePhaseChange as EventListener);
+    
+    return () => {
+      window.removeEventListener('changePhase', handlePhaseChange as EventListener);
+    };
+  }, [setPhase]);
+
+  // Let the user know what's going on
+  console.log("Current game phase:", phase);
+
+  // Add a manual retry button if showing the canvas fails
+  if (!showCanvas) {
+    return (
+      <div className="w-screen h-screen flex flex-col items-center justify-center bg-blue-900">
+        <div className="text-white text-center p-8 bg-black/50 rounded-xl max-w-xl">
+          <h1 className="text-3xl font-bold mb-4">Loading Kaya Quest</h1>
+          <p className="mb-4">Game assets are being loaded...</p>
+          <button 
+            className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-lg font-bold"
+            onClick={() => {
+              console.log("Manual retry clicked");
+              window.location.reload();
+            }}
+          >
+            Retry Loading
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-screen h-screen relative overflow-hidden">
-      {showCanvas && (
-        <KeyboardControls map={keyboardMap}>
-          {/* Game menu */}
-          {phase === "ready" && <GameMenu />}
-          
-          {/* Level selection screen */}
-          {phase === "selecting" && <LevelSelect />}
-          
-          {/* Active gameplay */}
-          {phase === "playing" && (
-            <>
-              <Canvas
-                shadows
-                camera={{
-                  position: [0, 5, 10],
-                  fov: 60,
-                  near: 0.1,
-                  far: 1000
-                }}
-                gl={{
-                  antialias: true,
-                  pixelRatio: window.devicePixelRatio
+      <KeyboardControls map={keyboardMap}>
+        {/* Game menu with debug overlay */}
+        {phase === "ready" && (
+          <div className="relative w-full h-full">
+            <GameMenu />
+            {/* Debug overlay */}
+            <div className="absolute top-2 right-2 z-50 bg-black/80 text-white p-2 rounded text-xs">
+              <p>Debug: Phase = {phase}</p>
+              <button 
+                className="mt-1 px-2 py-1 bg-green-700 text-white rounded"
+                onClick={() => {
+                  console.log("Manual phase change to 'selecting'");
+                  window.dispatchEvent(new CustomEvent('changePhase', { detail: 'selecting' }));
                 }}
               >
-                <color attach="background" args={["#87CEEB"]} />
-                <ambientLight intensity={0.8} />
-                <directionalLight 
-                  position={[10, 10, 5]} 
-                  intensity={1} 
-                  castShadow 
-                  shadow-mapSize={[1024, 1024]}
-                />
-                
-                <Suspense fallback={null}>
-                  <GameLevel />
-                </Suspense>
-              </Canvas>
-              <GameUI />
-            </>
-          )}
-          
-          {/* Game over screen */}
-          {phase === "ended" && <GameMenu showGameOver={true} />}
-          
-          {/* Sound manager component for handling game audio */}
-          <SoundManager />
-        </KeyboardControls>
-      )}
+                Force Level Select
+              </button>
+            </div>
+          </div>
+        )}
+        
+        {/* Level selection screen */}
+        {phase === "selecting" && <LevelSelect />}
+        
+        {/* Active gameplay */}
+        {phase === "playing" && (
+          <>
+            <Canvas
+              shadows
+              camera={{
+                position: [0, 5, 10],
+                fov: 60,
+                near: 0.1,
+                far: 1000
+              }}
+              gl={{
+                antialias: true,
+                pixelRatio: window.devicePixelRatio
+              }}
+            >
+              <color attach="background" args={["#87CEEB"]} />
+              <ambientLight intensity={0.8} />
+              <directionalLight 
+                position={[10, 10, 5]} 
+                intensity={1} 
+                castShadow 
+                shadow-mapSize={[1024, 1024]}
+              />
+              
+              <Suspense fallback={null}>
+                <GameLevel />
+              </Suspense>
+            </Canvas>
+            <GameUI />
+          </>
+        )}
+        
+        {/* Game over screen */}
+        {phase === "ended" && <GameMenu showGameOver={true} />}
+        
+        {/* Sound manager component for handling game audio */}
+        <SoundManager />
+      </KeyboardControls>
     </div>
   );
 }

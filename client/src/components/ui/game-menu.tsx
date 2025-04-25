@@ -106,11 +106,36 @@ export default function GameMenu({ showGameOver = false }: GameMenuProps) {
                     className="w-full py-6 text-xl font-bold bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white border-4 border-yellow-300"
                     onClick={() => {
                       console.log("PLAY button clicked!");
-                      setPhase("selecting");
+                      try {
+                        // Try both ways to change the phase - direct call and event
+                        setPhase("selecting");
+                        window.dispatchEvent(new CustomEvent('changePhase', { detail: 'selecting' }));
+                      } catch (err) {
+                        console.error("Error switching to level select:", err);
+                      }
                     }}
                   >
                     PLAY GAME
                   </Button>
+                  
+                  {/* Emergency button to directly play level 1-1 */}
+                  <div className="mt-2">
+                    <Button 
+                      variant="outline" 
+                      className="w-full bg-blue-700 text-white"
+                      onClick={() => {
+                        console.log("Emergency play button clicked!");
+                        try {
+                          // Emergency button to directly change to playing state
+                          setPhase("playing");
+                        } catch (err) {
+                          console.error("Error directly starting game:", err);
+                        }
+                      }}
+                    >
+                      QUICK START LEVEL 1-1
+                    </Button>
+                  </div>
                 </motion.div>
                 
                 <motion.div
