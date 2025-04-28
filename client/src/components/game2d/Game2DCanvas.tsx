@@ -735,27 +735,10 @@ export default function Game2DCanvas() {
         }, 1000); // Give sound time to play
       }
     } else {
-      // Play special enemy defeat sound 
-      // Create a fresh audio instance of enemy defeat sound
-      const defeatedSound = new Audio("/sounds/enemy_defeat.mp3");
-      defeatedSound.volume = 0.4;
-      
-      // Force browser to play the sound with fallback
-      const playPromise = defeatedSound.play();
-      if (playPromise !== undefined) {
-        playPromise.catch(error => {
-          console.log("Enemy defeat sound play prevented:", error);
-          // Try a fallback
-          setTimeout(() => {
-            defeatedSound.play().catch(err => {
-              console.log("Second attempt failed too:", err);
-              // Last resort fallback to success sound
-              playSuccess();
-            });
-          }, 100);
-        });
-      }
+      // Play special enemy defeat sound using our improved audio system
+      playEnemyDefeat();
       console.log(`Enemy defeated! +${pointsEarned} points! Score: ${score + pointsEarned}`);
+      console.log("Enemy defeat sound played!");
     }
   };
   
