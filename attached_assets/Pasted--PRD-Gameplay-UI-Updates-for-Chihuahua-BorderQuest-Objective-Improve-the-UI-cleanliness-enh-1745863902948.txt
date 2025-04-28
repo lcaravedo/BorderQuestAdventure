@@ -1,0 +1,110 @@
+ PRD: Gameplay & UI Updates for "Chihuahua BorderQuest"
+📝 Objective
+Improve the UI cleanliness, enhance platforming mechanics, introduce collectable tracking, and update audio feedback for different major in-game events to improve player experience and polish.
+
+🧩 Requirements
+1. UI Cleanup - Remove Redundant Scoreboards
+Problem: Two extra scoreboards clutter the interface, overlapping the correct HUD.
+
+Action:
+
+Remove the two redundant/extra scoreboards from the UI.
+
+Keep only the main HUD showing:
+
+Lives
+
+Health
+
+Current Score
+
+World & Level
+
+Result: A cleaner, more minimalist retro HUD with no UI overlaps.
+
+2. Platforming Mechanics - Enable Jumping onto Platforms
+Problem: The player cannot jump onto higher platforms, limiting movement and gameplay.
+
+Action:
+
+Adjust jump mechanics so the Chihuahua character can reach platforms positioned above ground level.
+
+If necessary, adjust jump height, gravity, and platform collision detection.
+
+Result: The player should be able to jump naturally onto platforms for vertical progression.
+
+3. Gameplay Tracking - Collectables System
+Problem: No tracking yet for key collectables.
+
+Action:
+
+Create and track counters for:
+
+Power-ups collected
+
+Coins collected
+
+Visa/Passport Stamps (hidden across levels)
+
+UI Updates:
+
+Add small, clean indicators in the HUD to show the number collected in each category.
+
+Result: Players can track their progress in collecting items throughout the worlds.
+
+4. Audio Feedback - Different Sound Effects
+Problem: Same or unclear sound cues for saving, defeating enemies, and boss fights.
+
+Action:
+
+Assign distinct sounds for:
+
+Saving the game (e.g., soft confirmation chime)
+
+Defeating a normal enemy (e.g., small "bark zap" sound)
+
+Defeating a boss (e.g., dramatic victory jingle)
+
+Result: Players can audibly recognize different types of achievements.
+
+5. Level Progression - End-of-Level Winning Sound & Lock Character Movement
+Problem: No unique win sound at border crossings, and players can keep moving past goal.
+
+Action:
+
+Play a victorious "winning" sound when reaching the end-goal (e.g., Border Crossing).
+
+Freeze or fade out character controls once the goal is reached, to transition cleanly to next level or story sequence.
+
+Result: A satisfying sense of level completion without allowing uncontrolled post-goal movement.
+
+📋 Acceptance Criteria
+
+Requirement	Description	Complete When
+UI Cleanup	Only one HUD remains showing Lives, Health, Score, World/Level	✅
+Jumping Enabled	Chihuahua can jump onto elevated platforms naturally	✅
+Collectables Tracked	Power-ups, Coins, Visa Stamps tracked and shown	✅
+Distinct Sounds	Separate sounds for save, enemy defeat, boss defeat	✅
+Winning Sound + Freeze	Win sound plays and character locks at Border	✅
+🔧 Technical Notes
+Game Engine Assumed: Phaser.js (or Unity 2D) or compatible.
+
+Preferred Audio Format: .mp3 or .ogg for retro sound effects.
+
+Save System: Should trigger save sound AFTER data is confirmed saved (localStorage, IndexedDB, etc.).
+
+Collision Handling: Update hitbox detection if adjusting platforming movement.
+
+🎯 Priority Order (suggested)
+Remove redundant UI scoreboards.
+
+Fix platform jumping.
+
+Implement collectable tracking.
+
+Separate sound effects.
+
+Winning sound and end-level character freeze.
+
+✅ Short "Prompt" for AI Coding Assistant
+"Hello AI! Please clean up the Chihuahua BorderQuest UI by removing extra scoreboards, enable platform jumping for the character, track collected coins, power-ups, and visa stamps, add separate sounds for saving, enemy kills, and boss victories, and make sure a winning sound plays at the Border with character movement locked after reaching the goal."

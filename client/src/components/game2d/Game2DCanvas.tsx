@@ -42,7 +42,14 @@ export default function Game2DCanvas() {
     snackCount, 
     killCount 
   } = useCollectibles();
-  const { playHit, playSuccess } = useAudio();
+  const { 
+    playHit, 
+    playSuccess, 
+    playBossVictory, 
+    playSave, 
+    playLevelComplete,
+    playBark 
+  } = useAudio();
   
   // Invincibility state (for power-ups and temporary invincibility after getting hit)
   const [isInvincible, setIsInvincible] = useState(false);
@@ -158,8 +165,8 @@ export default function Game2DCanvas() {
           attackCooldownRef.current = false;
         }, 500);
         
-        // Play attack sound
-        playHit();
+        // Play attack sound (bark sound)
+        playBark();
       }
     };
     
@@ -174,7 +181,7 @@ export default function Game2DCanvas() {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
     };
-  }, [playHit, isPaused]);
+  }, [playHit, playBark, isPaused]);
   
   // Handle window resize
   useEffect(() => {
@@ -704,8 +711,15 @@ export default function Game2DCanvas() {
     // Remove enemy
     enemiesRef.current.splice(index, 1);
     
-    // Play success sound
-    playSuccess();
+    // Play different sounds based on enemy type
+    if (enemy.isBoss) {
+      // Play boss victory sound for boss defeats
+      playBossVictory();
+      console.log("Boss defeated! Victory sound played!");
+    } else {
+      // Play regular success sound for normal enemies
+      playSuccess();
+    }
   };
   
   // Apply our helper function to both sword attacks and jump attacks

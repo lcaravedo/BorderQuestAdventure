@@ -22,7 +22,15 @@ const keyboardMap = [
 // Main App component
 function App() {
   const { phase } = useGame();
-  const { setBackgroundMusic, setHitSound, setSuccessSound } = useAudio();
+  const { 
+    setBackgroundMusic, 
+    setHitSound, 
+    setSuccessSound,
+    setBossVictorySound,
+    setSaveSound,
+    setLevelCompleteSound,
+    setBarkSound
+  } = useAudio();
   const [showCanvas, setShowCanvas] = useState(false);
 
   // Initialize audio assets and game state
@@ -33,19 +41,43 @@ function App() {
     backgroundMusic.volume = 0.4;
     setBackgroundMusic(backgroundMusic);
 
-    // Hit sound (used for bark attack)
+    // Hit sound (used for taking damage)
     const hitSound = new Audio("/sounds/hit.mp3");
     setHitSound(hitSound);
 
     // Success sound (used for collectibles)
     const successSound = new Audio("/sounds/success.mp3");
     setSuccessSound(successSound);
+    
+    // Boss victory sound (used when defeating bosses)
+    const bossVictorySound = new Audio("/sounds/boss_victory.mp3");
+    setBossVictorySound(bossVictorySound);
+    
+    // Save game sound (used when reaching checkpoints)
+    const saveSound = new Audio("/sounds/save.mp3");
+    setSaveSound(saveSound);
+    
+    // Level complete sound (used when reaching the border)
+    const levelCompleteSound = new Audio("/sounds/level_complete.mp3");
+    setLevelCompleteSound(levelCompleteSound);
+    
+    // Bark sound (used for bark attack)
+    const barkSound = new Audio("/sounds/bark.mp3");
+    setBarkSound(barkSound);
 
     console.log("App initialized in 'ready' state");
 
     // Show canvas after everything is loaded
     setShowCanvas(true);
-  }, [setBackgroundMusic, setHitSound, setSuccessSound]);
+  }, [
+    setBackgroundMusic, 
+    setHitSound, 
+    setSuccessSound, 
+    setBossVictorySound, 
+    setSaveSound,
+    setLevelCompleteSound,
+    setBarkSound
+  ]);
   
   // Add a listener for manual phase changes from our debug overlay
   const { setPhase } = useGame() as any;
