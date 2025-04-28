@@ -736,7 +736,7 @@ export default function Game2DCanvas() {
       }
     } else {
       // Play special enemy defeat sound using our improved audio system
-      playEnemyDefeat();
+      useAudio.getState().playEnemyDefeat();
       console.log(`Enemy defeated! +${pointsEarned} points! Score: ${score + pointsEarned}`);
       console.log("Enemy defeat sound played!");
     }
