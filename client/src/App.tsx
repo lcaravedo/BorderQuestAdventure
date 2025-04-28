@@ -4,6 +4,7 @@ import { useGame } from "./lib/stores/useGame";
 import GameMenu from "./components/ui/game-menu";
 import LevelSelect from "./components/ui/level-select";
 import GameUI from "./components/ui/game-ui";
+import UpgradeMenu from "./components/ui/upgrade-menu";
 import SoundManager from "./components/game/SoundManager";
 import Game2DCanvas from "./components/game2d/Game2DCanvas";
 import { Controls } from "./lib/consts";
@@ -171,6 +172,15 @@ function App() {
           <div className="game-wrapper">
             <Game2DCanvas />
             <GameUI />
+          </div>
+        )}
+        
+        {/* Upgrade menu */}
+        {phase === "upgrading" && (
+          <div className="game-wrapper">
+            <Game2DCanvas />
+            <GameUI />
+            <UpgradeMenu />
           </div>
         )}
         

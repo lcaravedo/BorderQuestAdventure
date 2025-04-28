@@ -23,6 +23,7 @@ interface CollectiblesState {
   isCollected: (id: string) => boolean;
   resetCollectibles: () => void;
   incrementKills: () => void; // Function to increment kill count
+  spendBones: (amount: number) => boolean; // Spend bones (return true if successful)
   
   // Save/Load
   saveProgress: () => void;
@@ -89,6 +90,20 @@ export const useCollectibles = create<CollectiblesState>()(
     incrementKills: () => set((state) => ({
       killCount: state.killCount + 1
     })),
+    
+    // Spend bones (coins) for purchases/upgrades - returns true if successful
+    spendBones: (amount) => {
+      const { boneCount } = get();
+      
+      // Check if player has enough bones
+      if (boneCount < amount) return false;
+      
+      // Deduct the amount
+      set((state) => ({ boneCount: state.boneCount - amount }));
+      
+      console.log(`Spent ${amount} coins. Remaining: ${get().boneCount}`);
+      return true;
+    },
     
     // Reset collectibles - typically used when restarting a level
     resetCollectibles: () => set({

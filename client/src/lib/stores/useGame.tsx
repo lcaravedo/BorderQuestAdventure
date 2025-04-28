@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { subscribeWithSelector } from "zustand/middleware";
 
-export type GamePhase = "ready" | "selecting" | "playing" | "ended";
+export type GamePhase = "ready" | "selecting" | "playing" | "upgrading" | "ended";
 
 interface GameState {
   phase: GamePhase;
