@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Sound Test</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+    button { padding: 10px 20px; margin: 5px; background: #4CAF50; color: white; border: none; cursor: pointer; }
+    button:hover { background: #45a049; }
+    .sound-test { margin-bottom: 20px; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+  </style>
+</head>
+<body>
+  <h1>Kaya Quest Sound Test</h1>
+  <p>This page tests all the sound files to make sure they're properly loaded and working.</p>
+  
+  <div class="sound-test">
+    <h2>Collectible Sound</h2>
+    <button onclick="playSound('/sounds/success.mp3')">Play Collectible Sound</button>
+  </div>
+  
+  <div class="sound-test">
+    <h2>Enemy Defeat Sound</h2>
+    <button onclick="playSound('/sounds/enemy_defeat.mp3')">Play Enemy Defeat Sound</button>
+  </div>
+  
+  <div class="sound-test">
+    <h2>Boss Victory Sound</h2>
+    <button onclick="playSound('/sounds/boss_victory.mp3')">Play Boss Victory Sound</button>
+  </div>
+  
+  <div class="sound-test">
+    <h2>Border Crossing Sound</h2>
+    <button onclick="playSound('/sounds/border_crossing.mp3')">Play Border Crossing Sound</button>
+  </div>
+  
+  <div class="sound-test">
+    <h2>Checkpoint Sound</h2>
+    <button onclick="playSound('/sounds/save_checkpoint.mp3')">Play Checkpoint Sound</button>
+  </div>
+  
+  <div class="sound-test">
+    <h2>Hit/Damage Sound</h2>
+    <button onclick="playSound('/sounds/hit.mp3')">Play Hit Sound</button>
+  </div>
+  
+  <div class="sound-test">
+    <h2>Bark Sound</h2>
+    <button onclick="playSound('/sounds/bark.mp3')">Play Bark Sound</button>
+  </div>
+  
+  <div class="sound-test">
+    <h2>Background Music</h2>
+    <button onclick="playMusic('/sounds/game_music.mp3')">Play Background Music</button>
+    <button onclick="stopMusic()">Stop Music</button>
+  </div>
+
+  <script>
+    let currentMusic = null;
+    
+    function playSound(url) {
+      const audio = new Audio(url);
+      audio.volume = 0.5;
+      audio.play().catch(err => {
+        console.error('Failed to play sound:', err);
+        alert('Failed to play sound. This browser might have autoplay restrictions.');
+      });
+    }
+    
+    function playMusic(url) {
+      if (currentMusic) {
+        currentMusic.pause();
+      }
+      currentMusic = new Audio(url);
+      currentMusic.loop = true;
+      currentMusic.volume = 0.3;
+      currentMusic.play().catch(err => {
+        console.error('Failed to play music:', err);
+        alert('Failed to play music. This browser might have autoplay restrictions.');
+      });
+    }
+    
+    function stopMusic() {
+      if (currentMusic) {
+        currentMusic.pause();
+        currentMusic = null;
+      }
+    }
+  </script>
+</body>
+</html>
