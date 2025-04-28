@@ -35,68 +35,53 @@ function App() {
 
   // Initialize audio assets and game state
   useEffect(() => {
-    // Helper function to preload audio files
-    const preloadAudio = (src: string): Promise<HTMLAudioElement> => {
-      return new Promise((resolve) => {
-        const audio = new Audio(src);
-        audio.addEventListener('canplaythrough', () => {
-          resolve(audio);
-        }, { once: true });
-        audio.load(); // Start loading the audio file
-      });
-    };
+    // Create audio files directly instead of waiting (browser autoplay policy issue)
+    const loadAudio = () => {
+      // Background music
+      const backgroundMusic = new Audio("/sounds/game_music.mp3");
+      backgroundMusic.loop = true;
+      backgroundMusic.volume = 0.4;
+      setBackgroundMusic(backgroundMusic);
 
-    // Preload all audio files asynchronously
-    const loadAllAudio = async () => {
-      try {
-        // Background music
-        const backgroundMusic = await preloadAudio("/sounds/game_music.mp3");
-        backgroundMusic.loop = true;
-        backgroundMusic.volume = 0.4;
-        setBackgroundMusic(backgroundMusic);
+      // Hit sound (used for taking damage)
+      const hitSound = new Audio("/sounds/hit.mp3");
+      hitSound.volume = 0.3;
+      setHitSound(hitSound);
 
-        // Hit sound (used for taking damage)
-        const hitSound = await preloadAudio("/sounds/hit.mp3");
-        hitSound.volume = 0.3;
-        setHitSound(hitSound);
-
-        // Success sound (used for collectibles)
-        const successSound = await preloadAudio("/sounds/success.mp3");
-        successSound.volume = 0.3;
-        setSuccessSound(successSound);
-        
-        // Boss victory sound (used when defeating bosses)
-        const bossVictorySound = await preloadAudio("/sounds/boss_victory.mp3");
-        bossVictorySound.volume = 0.5;
-        setBossVictorySound(bossVictorySound);
-        
-        // Save game sound (used when reaching checkpoints)
-        const saveSound = await preloadAudio("/sounds/save.mp3");
-        saveSound.volume = 0.3;
-        setSaveSound(saveSound);
-        
-        // Level complete sound (used when reaching the border)
-        const levelCompleteSound = await preloadAudio("/sounds/level_complete.mp3");
-        levelCompleteSound.volume = 0.4;
-        setLevelCompleteSound(levelCompleteSound);
-        
-        // Bark sound (used for bark attack)
-        const barkSound = await preloadAudio("/sounds/bark.mp3");
-        barkSound.volume = 0.25;
-        setBarkSound(barkSound);
-        
-        console.log("All audio assets loaded successfully");
-      } catch (error) {
-        console.error("Error loading audio:", error);
-      }
+      // Success sound (used for collectibles)
+      const successSound = new Audio("/sounds/success.mp3");
+      successSound.volume = 0.3;
+      setSuccessSound(successSound);
       
-      // Show canvas after everything is loaded, even if there were errors
+      // Boss victory sound (used when defeating bosses)
+      const bossVictorySound = new Audio("/sounds/boss_victory.mp3");
+      bossVictorySound.volume = 0.5;
+      setBossVictorySound(bossVictorySound);
+      
+      // Save game sound (used when reaching checkpoints)
+      const saveSound = new Audio("/sounds/save.mp3");
+      saveSound.volume = 0.3;
+      setSaveSound(saveSound);
+      
+      // Level complete sound (used when reaching the border)
+      const levelCompleteSound = new Audio("/sounds/level_complete.mp3");
+      levelCompleteSound.volume = 0.4;
+      setLevelCompleteSound(levelCompleteSound);
+      
+      // Bark sound (used for bark attack)
+      const barkSound = new Audio("/sounds/bark.mp3");
+      barkSound.volume = 0.25;
+      setBarkSound(barkSound);
+      
+      console.log("All audio assets created");
+      
+      // Show canvas immediately
       console.log("App initialized in 'ready' state");
       setShowCanvas(true);
     };
 
-    // Start loading audio
-    loadAllAudio();
+    // Load audio immediately
+    loadAudio();
   }, [
     setBackgroundMusic, 
     setHitSound, 
