@@ -110,7 +110,7 @@ export default function GameUI() {
               <div className="text-gray-400">Dash:</div>
               <div>L / SHIFT</div>
               <div className="text-gray-400">Mute Sound:</div>
-              <div>M</div>
+              <div>N</div>
               <div className="text-gray-400">Pause:</div>
               <div>ESC</div>
             </div>

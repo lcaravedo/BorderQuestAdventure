@@ -12,8 +12,8 @@
 
 <head profile="http://www.w3.org/1999/xhtml/vocab">
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<link rel="alternate" type="application/rss+xml" title="Active Forum Topics" href="https://opengameart.org/active-forum-topics.xml?destination=sites/default/files/boss_win.wav" />
-<link rel="alternate" type="application/rss+xml" title="Recent comments" href="https://opengameart.org/recent-comments.xml?destination=sites/default/files/boss_win.wav" />
+<link rel="alternate" type="application/rss+xml" title="Active Forum Topics" href="https://opengameart.org/active-forum-topics.xml?destination=sites/default/files/win.wav" />
+<link rel="alternate" type="application/rss+xml" title="Recent comments" href="https://opengameart.org/recent-comments.xml?destination=sites/default/files/win.wav" />
 <link rel="shortcut icon" href="https://opengameart.org/sites/all/themes/oga/opengameart2_favicon.ico" type="image/vnd.microsoft.icon" />
 <meta content="IE=edge,chrome=1" http-equiv="X-UA-Compatible" />
 <meta name="generator" content="Drupal 7 (http://drupal.org)" />
@@ -40,11 +40,11 @@
 <script type="text/javascript" src="https://opengameart.org/sites/default/files/js/js_WNcjX9C7AzUw-N1abXrdZLpLq71PtBe1dISODcGzqx8.js"></script>
 <script type="text/javascript">
 <!--//--><![CDATA[//><!--
-jQuery.extend(Drupal.settings, {"basePath":"\/","pathPrefix":"","setHasJsCookie":0,"ajaxPageState":{"theme":"oga_theme","theme_token":"crBOiepvdGDCd4ZB9gykSzx2_Qt-ojJ9WladzCzd1Lk","js":{"misc\/jquery.js":1,"misc\/jquery-extend-3.4.0.js":1,"misc\/jquery-html-prefilter-3.5.0-backport.js":1,"misc\/jquery.once.js":1,"misc\/drupal.js":1,"misc\/jquery.cookie.js":1,"misc\/jquery.form.js":1,"misc\/form-single-submit.js":1,"misc\/ajax.js":1,"sites\/all\/modules\/oga\/ajax_dlcount\/ajax_dlcount.js":1,"sites\/all\/modules\/entityreference\/js\/entityreference.js":1,"sites\/all\/modules\/compact_forms\/compact_forms.js":1,"sites\/all\/modules\/views\/js\/base.js":1,"misc\/progress.js":1,"sites\/all\/modules\/views\/js\/ajax_view.js":1,"modules\/openid\/openid.js":1,"sites\/all\/themes\/oga\/oga_theme.js":1},"css":{"modules\/system\/system.base.css":1,"modules\/system\/system.menus.css":1,"modules\/system\/system.messages.css":1,"modules\/system\/system.theme.css":1,"sites\/all\/modules\/comment_notify\/comment_notify.css":1,"modules\/comment\/comment.css":1,"modules\/field\/theme\/field.css":1,"sites\/all\/modules\/logintoboggan\/logintoboggan.css":1,"modules\/node\/node.css":1,"modules\/search\/search.css":1,"modules\/user\/user.css":1,"modules\/forum\/forum.css":1,"sites\/all\/modules\/views\/css\/views.css":1,"sites\/all\/modules\/ctools\/css\/ctools.css":1,"sites\/all\/modules\/compact_forms\/compact_forms.css":1,"modules\/openid\/openid.css":1,"sites\/all\/themes\/oga\/oga_theme.css":1}},"compactForms":{"forms":["user-login-form"],"stars":2},"urlIsAjaxTrusted":{"\/art-search":true,"\/views\/ajax":true,"\/sites\/default\/files\/boss_win.wav?destination=sites\/default\/files\/boss_win.wav":true},"views":{"ajax_path":"\/views\/ajax","ajaxViews":{"views_dom_id:8be6ef32ce68749ec1cad61233fe8855":{"view_name":"art_challenge","view_display_id":"block","view_args":"","view_path":"sites\/default\/files\/boss_win.wav","view_base_path":"art-challenge","view_dom_id":"8be6ef32ce68749ec1cad61233fe8855","pager_element":0},"views_dom_id:dfb3c17d1f80bd56d2155822801213d1":{"view_name":"art_collections","view_display_id":"block_2","view_args":"","view_path":"latest\/4333","view_base_path":"collections","view_dom_id":"dfb3c17d1f80bd56d2155822801213d1","pager_element":0}}}});
+jQuery.extend(Drupal.settings, {"basePath":"\/","pathPrefix":"","setHasJsCookie":0,"ajaxPageState":{"theme":"oga_theme","theme_token":"ux_wdkuHllZllS4RRcTiggznDJ8iha-Rjju4j4WleAw","js":{"misc\/jquery.js":1,"misc\/jquery-extend-3.4.0.js":1,"misc\/jquery-html-prefilter-3.5.0-backport.js":1,"misc\/jquery.once.js":1,"misc\/drupal.js":1,"misc\/jquery.cookie.js":1,"misc\/jquery.form.js":1,"misc\/form-single-submit.js":1,"misc\/ajax.js":1,"sites\/all\/modules\/oga\/ajax_dlcount\/ajax_dlcount.js":1,"sites\/all\/modules\/entityreference\/js\/entityreference.js":1,"sites\/all\/modules\/compact_forms\/compact_forms.js":1,"sites\/all\/modules\/views\/js\/base.js":1,"misc\/progress.js":1,"sites\/all\/modules\/views\/js\/ajax_view.js":1,"modules\/openid\/openid.js":1,"sites\/all\/themes\/oga\/oga_theme.js":1},"css":{"modules\/system\/system.base.css":1,"modules\/system\/system.menus.css":1,"modules\/system\/system.messages.css":1,"modules\/system\/system.theme.css":1,"sites\/all\/modules\/comment_notify\/comment_notify.css":1,"modules\/comment\/comment.css":1,"modules\/field\/theme\/field.css":1,"sites\/all\/modules\/logintoboggan\/logintoboggan.css":1,"modules\/node\/node.css":1,"modules\/search\/search.css":1,"modules\/user\/user.css":1,"modules\/forum\/forum.css":1,"sites\/all\/modules\/views\/css\/views.css":1,"sites\/all\/modules\/ctools\/css\/ctools.css":1,"sites\/all\/modules\/compact_forms\/compact_forms.css":1,"modules\/openid\/openid.css":1,"sites\/all\/themes\/oga\/oga_theme.css":1}},"compactForms":{"forms":["user-login-form"],"stars":2},"urlIsAjaxTrusted":{"\/art-search":true,"\/views\/ajax":true,"\/sites\/default\/files\/win.wav?destination=sites\/default\/files\/win.wav":true},"views":{"ajax_path":"\/views\/ajax","ajaxViews":{"views_dom_id:afe9f1a359d2350311d3d30aee3d8b87":{"view_name":"art_challenge","view_display_id":"block","view_args":"","view_path":"sites\/default\/files\/win.wav","view_base_path":"art-challenge","view_dom_id":"afe9f1a359d2350311d3d30aee3d8b87","pager_element":0},"views_dom_id:dfb3c17d1f80bd56d2155822801213d1":{"view_name":"art_collections","view_display_id":"block_2","view_args":"","view_path":"latest\/4333","view_base_path":"collections","view_dom_id":"dfb3c17d1f80bd56d2155822801213d1","pager_element":0}}}});
 //--><!]]>
 </script>
 </head>
-<body class="html not-front not-logged-in no-sidebars page-sites page-sites-default page-sites-default-files page-sites-default-files-boss-winwav domain-opengameart-org" >
+<body class="html not-front not-logged-in no-sidebars page-sites page-sites-default page-sites-default-files page-sites-default-files-winwav domain-opengameart-org" >
   <div id="skip-link">
     <a href="#main-content" class="element-invisible element-focusable">Skip to main content</a>
   </div>
@@ -62,7 +62,7 @@ node_art_form_group_author_information {
     <h2>User login</h2>
   
   <div class="content">
-    <form action="/sites/default/files/boss_win.wav?destination=sites/default/files/boss_win.wav" method="post" id="user-login-form" accept-charset="UTF-8"><div><div class="form-item form-type-textfield form-item-openid-identifier">
+    <form action="/sites/default/files/win.wav?destination=sites/default/files/win.wav" method="post" id="user-login-form" accept-charset="UTF-8"><div><div class="form-item form-type-textfield form-item-openid-identifier">
   <label for="edit-openid-identifier">OpenID </label>
  <input type="text" id="edit-openid-identifier" name="openid_identifier" value="" size="15" maxlength="255" class="form-text" />
 <div class="description"><a href="http://openid.net/">What is OpenID?</a></div>
@@ -75,9 +75,9 @@ node_art_form_group_author_information {
   <label for="edit-pass">Password <span class="form-required" title="This field is required.">*</span></label>
  <input type="password" id="edit-pass" name="pass" size="15" maxlength="128" class="form-text required" />
 </div>
-<input type="hidden" name="form_build_id" value="form-EAllYSF8x02y3S-BHHnustNzFQGhB3GM67RHq_2Ry9c" />
+<input type="hidden" name="form_build_id" value="form-9Chx5FavnCDfhBUnA9GAMOwDvsMMHoNbfsRo2upUdcY" />
 <input type="hidden" name="form_id" value="user_login_block" />
-<input type="hidden" name="openid.return_to" value="https://opengameart.org/openid/authenticate?destination=sites/default/files/boss_win.wav" />
+<input type="hidden" name="openid.return_to" value="https://opengameart.org/openid/authenticate?destination=sites/default/files/win.wav" />
 <div class="item-list"><ul class="openid-links"><li class="openid-link first"><a href="#openid-login">Log in using OpenID</a></li>
 <li class="user-link last"><a href="#">Cancel OpenID login</a></li>
 </ul></div><div class="item-list"><ul><li class="first"><a href="/user/register" title="Create a new user account.">Create new account</a></li>
@@ -333,7 +333,7 @@ node_art_form_group_author_information {
     <h2>Affiliates</h2>
   
   <div class="content">
-    <div class="view view-links view-id-links view-display-id-block view-dom-id-4f800f6c93e39f2fa25b74afe59f6e63">
+    <div class="view view-links view-id-links view-display-id-block view-dom-id-b4c9851caba2d55857be24638e5bc9a9">
         
   
   
@@ -372,7 +372,7 @@ node_art_form_group_author_information {
 
     
   <div class="content">
-    The requested page "/sites/default/files/boss_win.wav" could not be found.  </div>
+    The requested page "/sites/default/files/win.wav" could not be found.  </div>
 </div>
   </div>
     </div>

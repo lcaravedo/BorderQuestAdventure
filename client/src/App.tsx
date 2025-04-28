@@ -41,15 +41,29 @@ function App() {
       // Background music
       const backgroundMusic = new Audio("/sounds/game_music.mp3");
       backgroundMusic.loop = true;
-      backgroundMusic.volume = 0.4;
+      backgroundMusic.volume = 0.3;
       setBackgroundMusic(backgroundMusic);
+      
+      // Start playing background music automatically
+      const startMusic = () => {
+        backgroundMusic.play().catch(error => {
+          console.log("Auto-play of background music prevented:", error);
+          // We'll try again when user interacts
+          document.addEventListener('click', () => {
+            backgroundMusic.play().catch(e => console.log("Still couldn't play music:", e));
+          }, { once: true });
+        });
+      };
+      
+      // Try to play music automatically
+      setTimeout(startMusic, 1000);
 
       // Hit sound (used for taking damage)
       const hitSound = new Audio("/sounds/hit.mp3");
       hitSound.volume = 0.3;
       setHitSound(hitSound);
 
-      // Success sound (used for collectibles)
+      // Success sound (used for collectibles only)
       const successSound = new Audio("/sounds/success.mp3");
       successSound.volume = 0.3;
       setSuccessSound(successSound);
@@ -60,14 +74,21 @@ function App() {
       setBossVictorySound(bossVictorySound);
       
       // Save game sound (used when reaching checkpoints)
-      const saveSound = new Audio("/sounds/save.mp3");
-      saveSound.volume = 0.3;
+      const saveSound = new Audio("/sounds/save_checkpoint.mp3");
+      saveSound.volume = 0.4;
       setSaveSound(saveSound);
       
       // Level complete sound (used when reaching the border)
-      const levelCompleteSound = new Audio("/sounds/level_complete.mp3");
-      levelCompleteSound.volume = 0.4;
+      const levelCompleteSound = new Audio("/sounds/border_crossing.mp3");
+      levelCompleteSound.volume = 0.5;
       setLevelCompleteSound(levelCompleteSound);
+      
+      // Enemy defeat sound (replaces success sound for enemy defeats)
+      const enemyDefeatSound = new Audio("/sounds/enemy_defeat.mp3");
+      enemyDefeatSound.volume = 0.4;
+      
+      // Override the success sound specifically for enemy defeats
+      window.enemyDefeatSound = enemyDefeatSound;
       
       // Bark sound (used for bark attack)
       const barkSound = new Audio("/sounds/bark.mp3");

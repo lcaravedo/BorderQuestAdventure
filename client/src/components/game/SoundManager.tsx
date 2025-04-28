@@ -68,10 +68,10 @@ export default function SoundManager() {
     };
   }, [backgroundMusic, phase, isMuted]);
 
-  // Keyboard listener for mute toggle (M key)
+  // Keyboard listener for mute toggle (N key) - changed from M to avoid conflict with sword attack
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.code === "KeyM") {
+      if (e.code === "KeyN") {
         toggleMute();
         
         // If we're unmuting and the game is playing, start the background music
