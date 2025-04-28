@@ -735,20 +735,25 @@ export default function Game2DCanvas() {
         }, 1000); // Give sound time to play
       }
     } else {
-      // Play enemy defeat sound for normal enemies
-      // Use our special enemy defeat sound instead of the regular success sound
-      if (window.enemyDefeatSound) {
-        // Clone the sound to prevent issues with multiple enemies defeated quickly
-        const soundClone = window.enemyDefeatSound.cloneNode() as HTMLAudioElement;
-        soundClone.volume = 0.4;
-        soundClone.play().catch(error => {
+      // Play special enemy defeat sound 
+      // Create a fresh audio instance of enemy defeat sound
+      const defeatedSound = new Audio("/sounds/enemy_defeat.mp3");
+      defeatedSound.volume = 0.4;
+      
+      // Force browser to play the sound with fallback
+      const playPromise = defeatedSound.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(error => {
           console.log("Enemy defeat sound play prevented:", error);
-          // Fallback to regular success sound if there's an issue
-          playSuccess();
+          // Try a fallback
+          setTimeout(() => {
+            defeatedSound.play().catch(err => {
+              console.log("Second attempt failed too:", err);
+              // Last resort fallback to success sound
+              playSuccess();
+            });
+          }, 100);
         });
-      } else {
-        // Fallback if enemy defeat sound isn't available
-        playSuccess();
       }
       console.log(`Enemy defeated! +${pointsEarned} points! Score: ${score + pointsEarned}`);
     }

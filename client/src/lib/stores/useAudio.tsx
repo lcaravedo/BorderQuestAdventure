@@ -67,12 +67,21 @@ export const useAudio = create<AudioState>((set, get) => ({
         return;
       }
       
-      // Clone the sound to allow overlapping playback
-      const soundClone = hitSound.cloneNode() as HTMLAudioElement;
-      soundClone.volume = 0.3;
-      soundClone.play().catch(error => {
-        console.log("Hit sound play prevented:", error);
-      });
+      // Create a fresh audio instance to avoid playback issues
+      const fxSound = new Audio("/sounds/hit.mp3");
+      fxSound.volume = 0.3;
+      
+      // Force browser to play the sound
+      const playPromise = fxSound.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(error => {
+          console.log("Hit sound play prevented:", error);
+          // Try a fallback technique
+          setTimeout(() => {
+            fxSound.play().catch(err => console.log("Second attempt failed too:", err));
+          }, 100);
+        });
+      }
     }
   },
   
@@ -85,10 +94,21 @@ export const useAudio = create<AudioState>((set, get) => ({
         return;
       }
       
-      successSound.currentTime = 0;
-      successSound.play().catch(error => {
-        console.log("Success sound play prevented:", error);
-      });
+      // Create a fresh audio instance to avoid playback issues
+      const fxSound = new Audio("/sounds/success.mp3");
+      fxSound.volume = 0.3;
+      
+      // Force browser to play the sound
+      const playPromise = fxSound.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(error => {
+          console.log("Success sound play prevented:", error);
+          // Try a fallback technique
+          setTimeout(() => {
+            fxSound.play().catch(err => console.log("Second attempt failed too:", err));
+          }, 100);
+        });
+      }
     }
   },
   
@@ -101,11 +121,21 @@ export const useAudio = create<AudioState>((set, get) => ({
         return;
       }
       
-      bossVictorySound.currentTime = 0;
-      bossVictorySound.volume = 0.5; // Special victory sound should be prominent
-      bossVictorySound.play().catch(error => {
-        console.log("Boss victory sound play prevented:", error);
-      });
+      // Create a fresh audio instance to avoid playback issues
+      const fxSound = new Audio("/sounds/boss_victory.mp3");
+      fxSound.volume = 0.5; // Special victory sound should be prominent
+      
+      // Force browser to play the sound
+      const playPromise = fxSound.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(error => {
+          console.log("Boss victory sound play prevented:", error);
+          // Try a fallback technique
+          setTimeout(() => {
+            fxSound.play().catch(err => console.log("Second attempt failed too:", err));
+          }, 100);
+        });
+      }
     }
   },
   
@@ -118,11 +148,21 @@ export const useAudio = create<AudioState>((set, get) => ({
         return;
       }
       
-      saveSound.currentTime = 0;
-      saveSound.volume = 0.3;
-      saveSound.play().catch(error => {
-        console.log("Save sound play prevented:", error);
-      });
+      // Create a fresh audio instance to avoid playback issues
+      const fxSound = new Audio("/sounds/save_checkpoint.mp3");
+      fxSound.volume = 0.4;
+      
+      // Force browser to play the sound
+      const playPromise = fxSound.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(error => {
+          console.log("Save sound play prevented:", error);
+          // Try a fallback technique
+          setTimeout(() => {
+            fxSound.play().catch(err => console.log("Second attempt failed too:", err));
+          }, 100);
+        });
+      }
     }
   },
   
@@ -135,11 +175,21 @@ export const useAudio = create<AudioState>((set, get) => ({
         return;
       }
       
-      levelCompleteSound.currentTime = 0;
-      levelCompleteSound.volume = 0.4;
-      levelCompleteSound.play().catch(error => {
-        console.log("Level complete sound play prevented:", error);
-      });
+      // Create a fresh audio instance to avoid playback issues
+      const fxSound = new Audio("/sounds/border_crossing.mp3");
+      fxSound.volume = 0.5;
+      
+      // Force browser to play the sound
+      const playPromise = fxSound.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(error => {
+          console.log("Level complete sound play prevented:", error);
+          // Try a fallback technique
+          setTimeout(() => {
+            fxSound.play().catch(err => console.log("Second attempt failed too:", err));
+          }, 100);
+        });
+      }
     }
   },
   
@@ -152,12 +202,21 @@ export const useAudio = create<AudioState>((set, get) => ({
         return;
       }
       
-      // Clone the sound to allow overlapping playback
-      const soundClone = barkSound.cloneNode() as HTMLAudioElement;
-      soundClone.volume = 0.25;
-      soundClone.play().catch(error => {
-        console.log("Bark sound play prevented:", error);
-      });
+      // Create a fresh audio instance to avoid playback issues
+      const fxSound = new Audio("/sounds/bark.mp3");
+      fxSound.volume = 0.25;
+      
+      // Force browser to play the sound
+      const playPromise = fxSound.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(error => {
+          console.log("Bark sound play prevented:", error);
+          // Try a fallback technique
+          setTimeout(() => {
+            fxSound.play().catch(err => console.log("Second attempt failed too:", err));
+          }, 100);
+        });
+      }
     }
   }
 }));
