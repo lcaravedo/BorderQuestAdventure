@@ -2109,33 +2109,46 @@ export default function Game2DCanvas() {
           playerBottom > platformTop &&
           playerTop < platformBottom
         ) {
+          // Calculate the player's previous position (before applying velocity)
+          const prevPlayerBottom = playerBottom - playerVelRef.current.y;
+          
           // Determine which side of the platform the player is colliding with
           const overlapLeft = playerRight - platformLeft;
           const overlapRight = platformRight - playerLeft;
           const overlapTop = playerBottom - platformTop;
           const overlapBottom = platformBottom - playerTop;
           
-          // Find the smallest overlap
-          const minOverlap = Math.min(overlapLeft, overlapRight, overlapTop, overlapBottom);
-          
-          // Resolve collision based on the smallest overlap
-          if (minOverlap === overlapTop && playerVelRef.current.y > 0) {
-            // Colliding with top of platform
+          // Special priority for top-of-platform collisions when falling
+          // This improves platform detection when jumping
+          if (playerVelRef.current.y > 0 && prevPlayerBottom <= platformTop + 10) {
+            // Landing on top of platform from above
             playerPosRef.current.y = platformTop - playerSizeRef.current.height / 2;
             playerVelRef.current.y = 0;
             isGroundedRef.current = true;
-          } else if (minOverlap === overlapBottom && playerVelRef.current.y < 0) {
-            // Colliding with bottom of platform
-            playerPosRef.current.y = platformBottom + playerSizeRef.current.height / 2;
-            playerVelRef.current.y = 0;
-          } else if (minOverlap === overlapLeft && playerVelRef.current.x > 0) {
-            // Colliding with left side of platform
-            playerPosRef.current.x = platformLeft - playerSizeRef.current.width / 2;
-            playerVelRef.current.x = 0;
-          } else if (minOverlap === overlapRight && playerVelRef.current.x < 0) {
-            // Colliding with right side of platform
-            playerPosRef.current.x = platformRight + playerSizeRef.current.width / 2;
-            playerVelRef.current.x = 0;
+            console.log("Landing on platform!");
+          } else {
+            // For other collisions, use minimum overlap approach
+            const minOverlap = Math.min(overlapLeft, overlapRight, overlapTop, overlapBottom);
+            
+            // Resolve collision based on the smallest overlap and velocity direction
+            if (minOverlap === overlapTop && playerVelRef.current.y > 0) {
+              // Colliding with top of platform
+              playerPosRef.current.y = platformTop - playerSizeRef.current.height / 2;
+              playerVelRef.current.y = 0;
+              isGroundedRef.current = true;
+            } else if (minOverlap === overlapBottom && playerVelRef.current.y < 0) {
+              // Colliding with bottom of platform
+              playerPosRef.current.y = platformBottom + playerSizeRef.current.height / 2;
+              playerVelRef.current.y = 0;
+            } else if (minOverlap === overlapLeft && playerVelRef.current.x > 0) {
+              // Colliding with left side of platform
+              playerPosRef.current.x = platformLeft - playerSizeRef.current.width / 2;
+              playerVelRef.current.x = 0;
+            } else if (minOverlap === overlapRight && playerVelRef.current.x < 0) {
+              // Colliding with right side of platform
+              playerPosRef.current.x = platformRight + playerSizeRef.current.width / 2;
+              playerVelRef.current.x = 0;
+            }
           }
         }
       });
@@ -2164,31 +2177,43 @@ export default function Game2DCanvas() {
             playerBottom > obstacleTop &&
             playerTop < obstacleBottom
           ) {
-            // Determine collision side
-            const overlapLeft = playerRight - obstacleLeft;
-            const overlapRight = obstacleRight - playerLeft;
-            const overlapTop = playerBottom - obstacleTop;
-            const overlapBottom = obstacleBottom - playerTop;
+            // Calculate the player's previous position (before applying velocity)
+            const prevPlayerBottom = playerBottom - playerVelRef.current.y;
             
-            const minOverlap = Math.min(overlapLeft, overlapRight, overlapTop, overlapBottom);
-            
-            if (minOverlap === overlapTop && playerVelRef.current.y > 0) {
-              // Landing on top
+            // Special priority for top-of-platform collisions when falling
+            if (playerVelRef.current.y > 0 && prevPlayerBottom <= obstacleTop + 10) {
+              // Landing on top of platform from above
               playerPosRef.current.y = obstacleTop - playerSizeRef.current.height / 2;
               playerVelRef.current.y = 0;
               isGroundedRef.current = true;
-            } else if (minOverlap === overlapBottom && playerVelRef.current.y < 0) {
-              // Hitting bottom
-              playerPosRef.current.y = obstacleBottom + playerSizeRef.current.height / 2;
-              playerVelRef.current.y = 0;
-            } else if (minOverlap === overlapLeft && playerVelRef.current.x > 0) {
-              // Hitting left side
-              playerPosRef.current.x = obstacleLeft - playerSizeRef.current.width / 2;
-              playerVelRef.current.x = 0;
-            } else if (minOverlap === overlapRight && playerVelRef.current.x < 0) {
-              // Hitting right side
-              playerPosRef.current.x = obstacleRight + playerSizeRef.current.width / 2;
-              playerVelRef.current.x = 0;
+              console.log("Landing on dynamic platform!");
+            } else {
+              // Determine collision side
+              const overlapLeft = playerRight - obstacleLeft;
+              const overlapRight = obstacleRight - playerLeft;
+              const overlapTop = playerBottom - obstacleTop;
+              const overlapBottom = obstacleBottom - playerTop;
+              
+              const minOverlap = Math.min(overlapLeft, overlapRight, overlapTop, overlapBottom);
+              
+              if (minOverlap === overlapTop && playerVelRef.current.y > 0) {
+                // Landing on top
+                playerPosRef.current.y = obstacleTop - playerSizeRef.current.height / 2;
+                playerVelRef.current.y = 0;
+                isGroundedRef.current = true;
+              } else if (minOverlap === overlapBottom && playerVelRef.current.y < 0) {
+                // Hitting bottom
+                playerPosRef.current.y = obstacleBottom + playerSizeRef.current.height / 2;
+                playerVelRef.current.y = 0;
+              } else if (minOverlap === overlapLeft && playerVelRef.current.x > 0) {
+                // Hitting left side
+                playerPosRef.current.x = obstacleLeft - playerSizeRef.current.width / 2;
+                playerVelRef.current.x = 0;
+              } else if (minOverlap === overlapRight && playerVelRef.current.x < 0) {
+                // Hitting right side
+                playerPosRef.current.x = obstacleRight + playerSizeRef.current.width / 2;
+                playerVelRef.current.x = 0;
+              }
             }
           }
         }
@@ -2210,23 +2235,28 @@ export default function Game2DCanvas() {
             if (obstacle.type === 'bone') {
               // Collect bone
               handleCollectItem(collectibleId, 'bone');
+              console.log(`Bone collected! Total bones: ${boneCount + 1}`);
               playSuccess();
             } else if (obstacle.type === 'visa') {
               // Collect visa
               handleCollectItem(collectibleId, 'visa');
+              console.log(`Visa collected! Total visas: ${visaCount + 1}`);
               playSuccess();
             } else if (obstacle.type === 'snack') {
               // Heal player
               handleHeal(1); // Heal 1 health point
+              console.log(`Snack collected! Health restored to ${Math.min(health + 1, maxHealth)}/${maxHealth}`);
               playSuccess();
             } else if (obstacle.type === 'mushroom') {
               // Transform into chihuahua
               handlePowerUp(30000); // 30 second powerup
+              console.log("Mushroom power-up activated! 30 seconds of chihuahua form!");
               playSuccess();
             } else if (obstacle.type === 'joint') {
               // Temporary invincibility
               setIsInvincible(true);
               setTimeout(() => setIsInvincible(false), 10000);
+              console.log("Joint power-up activated! 10 seconds of invincibility!");
               playSuccess();
             }
             
@@ -2327,15 +2357,19 @@ export default function Game2DCanvas() {
         );
       }
       
-      // Handle powerup timer countdown
-      if (isPoweredUp && powerUpTimeRemaining > 0) {
-        // Countdown the powerup timer 
-        const currentPowerUpTime = Math.max(0, powerUpTimeRemaining - deltaTime * 16);
-        if (currentPowerUpTime <= 0) {
-          // Power-up expired
-          resetPowerUp();
-          console.log("Power-up expired!");
-        }
+      // Handle powerup functionality checks
+      if (isPoweredUp) {
+        // Power-up visual effects
+        ctx.globalAlpha = 0.7 + Math.sin(timestamp * 0.01) * 0.3;
+        // Apply a glow effect when powered up
+        ctx.fillStyle = 'rgba(255, 255, 0, 0.2)';
+        ctx.fillRect(
+          playerPosRef.current.x - 30,
+          playerPosRef.current.y - 30,
+          60,
+          60
+        );
+        ctx.globalAlpha = 1.0;
       }
       
       // Draw UI elements (health bar, lives)
