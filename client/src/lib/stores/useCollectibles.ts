@@ -16,11 +16,13 @@ interface CollectiblesState {
   boneCount: number;
   visaCount: number;
   snackCount: number;
+  killCount: number; // Count of enemies defeated
   
   // Functions
   collectItem: (id: string, type: string) => void;
   isCollected: (id: string) => boolean;
   resetCollectibles: () => void;
+  incrementKills: () => void; // Function to increment kill count
   
   // Save/Load
   saveProgress: () => void;
@@ -36,6 +38,7 @@ export const useCollectibles = create<CollectiblesState>()(
     boneCount: 0,
     visaCount: 0,
     snackCount: 0,
+    killCount: 0,
     
     // Collect a new item
     collectItem: (id, type) => set((state) => {
@@ -71,7 +74,8 @@ export const useCollectibles = create<CollectiblesState>()(
         collectibles: newCollectibles,
         boneCount,
         visaCount,
-        snackCount
+        snackCount,
+        killCount: state.killCount
       };
     }),
     
@@ -81,22 +85,29 @@ export const useCollectibles = create<CollectiblesState>()(
       return !!collectibles[id];
     },
     
+    // Increment kill count
+    incrementKills: () => set((state) => ({
+      killCount: state.killCount + 1
+    })),
+    
     // Reset collectibles - typically used when restarting a level
     resetCollectibles: () => set({
       collectibles: {},
       boneCount: 0,
       visaCount: 0,
-      snackCount: 0
+      snackCount: 0,
+      killCount: 0
     }),
     
     // Save collectibles to localStorage
     saveProgress: () => {
-      const { collectibles, boneCount, visaCount, snackCount } = get();
+      const { collectibles, boneCount, visaCount, snackCount, killCount } = get();
       setLocalStorage('chihuahua_collectibles', {
         collectibles,
         boneCount,
         visaCount,
-        snackCount
+        snackCount,
+        killCount
       });
     },
     
@@ -108,7 +119,8 @@ export const useCollectibles = create<CollectiblesState>()(
           collectibles: data.collectibles || {},
           boneCount: data.boneCount || 0,
           visaCount: data.visaCount || 0,
-          snackCount: data.snackCount || 0
+          snackCount: data.snackCount || 0,
+          killCount: data.killCount || 0
         });
       }
     }

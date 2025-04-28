@@ -29,9 +29,19 @@ export default function Game2DCanvas() {
     hearts,
     maxHealth,
     isPoweredUp,
-    isGameOver
+    isGameOver,
+    dashLevel,  // Add dash level for powerup display
+    barkPower   // Add bark power for powerup display
   } = usePlayer();
-  const { resetCollectibles, collectItem } = useCollectibles();
+  const { 
+    resetCollectibles, 
+    collectItem, 
+    incrementKills, 
+    boneCount, 
+    visaCount, 
+    snackCount, 
+    killCount 
+  } = useCollectibles();
   const { playHit, playSuccess } = useAudio();
   
   // Invincibility state (for power-ups and temporary invincibility after getting hit)
@@ -604,7 +614,7 @@ export default function Game2DCanvas() {
     ctx.beginPath();
     ctx.arc(width - 180, tokenY + 10, 10, 0, Math.PI * 2);
     ctx.stroke();
-    ctx.fillText(collectibles.bones.toString(), width - 160, tokenY + 10);
+    ctx.fillText(boneCount.toString(), width - 160, tokenY + 10);
     
     // Draw kills counter
     ctx.fillStyle = '#00AA00';
@@ -612,7 +622,7 @@ export default function Game2DCanvas() {
     ctx.arc(width - 130, tokenY + 10, 10, 0, Math.PI * 2);
     ctx.fill();
     ctx.fillStyle = '#000000';
-    ctx.fillText(collectibles.kills.toString(), width - 110, tokenY + 10);
+    ctx.fillText(killCount.toString(), width - 110, tokenY + 10);
     
     // Draw special tokens (visas)
     ctx.fillStyle = '#0000FF';
@@ -620,7 +630,7 @@ export default function Game2DCanvas() {
     ctx.arc(width - 80, tokenY + 10, 10, 0, Math.PI * 2);
     ctx.fill();
     ctx.fillStyle = '#000000';
-    ctx.fillText(collectibles.visas.toString(), width - 60, tokenY + 10);
+    ctx.fillText(visaCount.toString(), width - 60, tokenY + 10);
     
     // Draw small labels
     ctx.font = '8px "Press Start 2P", monospace';
