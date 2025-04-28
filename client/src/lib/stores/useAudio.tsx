@@ -97,200 +97,156 @@ export const useAudio = create<AudioState>((set, get) => ({
   },
   
   playSuccess: () => {
-    const { successSound, isMuted } = get();
-    if (successSound) {
-      // If sound is muted, don't play anything
-      if (isMuted) {
-        console.log("Success sound skipped (muted)");
-        return;
-      }
-      
-      // Create a fresh audio instance to avoid playback issues
+    const { isMuted } = get();
+    
+    // If sound is muted, don't play anything
+    if (isMuted) {
+      console.log("Success sound skipped (muted)");
+      return;
+    }
+    
+    console.log("Playing COLLECTIBLE sound effect");
+    
+    // Use global sound player if available, otherwise fallback
+    if (typeof window !== 'undefined' && window.playSoundEffect) {
+      window.playSoundEffect("/sounds/success.mp3", 0.3);
+    } else {
+      // Fallback method
       const fxSound = new Audio("/sounds/success.mp3");
       fxSound.volume = 0.3;
-      
-      console.log("Playing COLLECTIBLE sound effect");
-      
-      // Force browser to play the sound
-      const playPromise = fxSound.play();
-      if (playPromise !== undefined) {
-        playPromise.then(() => {
-          console.log("✅ Collectible sound playing successfully!");
-        }).catch(error => {
-          console.log("⚠️ Success sound play prevented:", error);
-          // Try a fallback technique
-          setTimeout(() => {
-            fxSound.play()
-              .then(() => console.log("✅ Collectible sound played on second attempt!"))
-              .catch(err => console.log("❌ Second attempt failed too:", err));
-          }, 100);
-        });
-      }
+      fxSound.play().catch(err => console.log("Audio play error:", err));
     }
   },
   
   playBossVictory: () => {
-    const { bossVictorySound, isMuted } = get();
-    if (bossVictorySound) {
-      // If sound is muted, don't play anything
-      if (isMuted) {
-        console.log("Boss victory sound skipped (muted)");
-        return;
-      }
-      
-      // Create a fresh audio instance to avoid playback issues
+    const { isMuted } = get();
+    
+    // If sound is muted, don't play anything
+    if (isMuted) {
+      console.log("Boss victory sound skipped (muted)");
+      return;
+    }
+    
+    console.log("Playing BOSS VICTORY sound effect");
+    
+    // Use global sound player if available, otherwise fallback
+    if (typeof window !== 'undefined' && window.playSoundEffect) {
+      window.playSoundEffect("/sounds/boss_victory.mp3", 0.5);
+    } else {
+      // Fallback method
       const fxSound = new Audio("/sounds/boss_victory.mp3");
-      fxSound.volume = 0.5; // Special victory sound should be prominent
-      
-      console.log("Playing BOSS VICTORY sound effect");
-      
-      // Force browser to play the sound
-      const playPromise = fxSound.play();
-      if (playPromise !== undefined) {
-        playPromise.then(() => {
-          console.log("✅ Boss victory sound playing successfully!");
-        }).catch(error => {
-          console.log("⚠️ Boss victory sound play prevented:", error);
-          // Try a fallback technique
-          setTimeout(() => {
-            fxSound.play()
-              .then(() => console.log("✅ Boss victory sound played on second attempt!"))
-              .catch(err => console.log("❌ Second attempt failed too:", err));
-          }, 100);
-        });
-      }
+      fxSound.volume = 0.5;
+      fxSound.play().catch(err => console.log("Audio play error:", err));
     }
   },
   
   playSave: () => {
-    const { saveSound, isMuted } = get();
-    if (saveSound) {
-      // If sound is muted, don't play anything
-      if (isMuted) {
-        console.log("Save sound skipped (muted)");
-        return;
-      }
-      
-      // Create a fresh audio instance to avoid playback issues
+    const { isMuted } = get();
+    
+    // If sound is muted, don't play anything
+    if (isMuted) {
+      console.log("Save sound skipped (muted)");
+      return;
+    }
+    
+    console.log("Playing CHECKPOINT sound effect");
+    
+    // Use global sound player if available, otherwise fallback
+    if (typeof window !== 'undefined' && window.playSoundEffect) {
+      window.playSoundEffect("/sounds/save_checkpoint.mp3", 0.4);
+    } else {
+      // Fallback method
       const fxSound = new Audio("/sounds/save_checkpoint.mp3");
       fxSound.volume = 0.4;
-      
-      console.log("Playing CHECKPOINT sound effect");
-      
-      // Force browser to play the sound
-      const playPromise = fxSound.play();
-      if (playPromise !== undefined) {
-        playPromise.then(() => {
-          console.log("✅ Checkpoint sound playing successfully!");
-        }).catch(error => {
-          console.log("⚠️ Save sound play prevented:", error);
-          // Try a fallback technique
-          setTimeout(() => {
-            fxSound.play()
-              .then(() => console.log("✅ Checkpoint sound played on second attempt!"))
-              .catch(err => console.log("❌ Second attempt failed too:", err));
-          }, 100);
-        });
-      }
+      fxSound.play().catch(err => console.log("Audio play error:", err));
     }
   },
   
   playLevelComplete: () => {
-    const { levelCompleteSound, isMuted } = get();
-    if (levelCompleteSound) {
-      // If sound is muted, don't play anything
-      if (isMuted) {
-        console.log("Level complete sound skipped (muted)");
-        return;
-      }
-      
-      // Create a fresh audio instance to avoid playback issues
+    const { isMuted } = get();
+    
+    // If sound is muted, don't play anything
+    if (isMuted) {
+      console.log("Level complete sound skipped (muted)");
+      return;
+    }
+    
+    console.log("Playing BORDER CROSSING sound effect");
+    
+    // Use global sound player if available, otherwise fallback
+    if (typeof window !== 'undefined' && window.playSoundEffect) {
+      window.playSoundEffect("/sounds/border_crossing.mp3", 0.5);
+    } else {
+      // Fallback method
       const fxSound = new Audio("/sounds/border_crossing.mp3");
       fxSound.volume = 0.5;
-      
-      console.log("Playing BORDER CROSSING sound effect");
-      
-      // Force browser to play the sound
-      const playPromise = fxSound.play();
-      if (playPromise !== undefined) {
-        playPromise.then(() => {
-          console.log("✅ Border crossing sound playing successfully!");
-        }).catch(error => {
-          console.log("⚠️ Border crossing sound play prevented:", error);
-          // Try a fallback technique
-          setTimeout(() => {
-            fxSound.play()
-              .then(() => console.log("✅ Border crossing sound played on second attempt!"))
-              .catch(err => console.log("❌ Second attempt failed too:", err));
-          }, 100);
-        });
-      }
+      fxSound.play().catch(err => console.log("Audio play error:", err));
     }
   },
   
   playBark: () => {
-    const { barkSound, isMuted } = get();
-    if (barkSound) {
-      // If sound is muted, don't play anything
-      if (isMuted) {
-        console.log("Bark sound skipped (muted)");
-        return;
-      }
-      
-      // Create a fresh audio instance to avoid playback issues
+    const { isMuted } = get();
+    
+    // If sound is muted, don't play anything
+    if (isMuted) {
+      console.log("Bark sound skipped (muted)");
+      return;
+    }
+    
+    console.log("Playing BARK sound effect");
+    
+    // Use global sound player if available, otherwise fallback
+    if (typeof window !== 'undefined' && window.playSoundEffect) {
+      window.playSoundEffect("/sounds/bark.mp3", 0.25);
+    } else {
+      // Fallback method
       const fxSound = new Audio("/sounds/bark.mp3");
       fxSound.volume = 0.25;
-      
-      console.log("Playing BARK sound effect");
-      
-      // Force browser to play the sound
-      const playPromise = fxSound.play();
-      if (playPromise !== undefined) {
-        playPromise.then(() => {
-          console.log("✅ Bark sound playing successfully!");
-        }).catch(error => {
-          console.log("⚠️ Bark sound play prevented:", error);
-          // Try a fallback technique
-          setTimeout(() => {
-            fxSound.play()
-              .then(() => console.log("✅ Bark sound played on second attempt!"))
-              .catch(err => console.log("❌ Second attempt failed too:", err));
-          }, 100);
-        });
-      }
+      fxSound.play().catch(err => console.log("Audio play error:", err));
     }
   },
   
   playEnemyDefeat: () => {
-    const { enemyDefeatSound, isMuted } = get();
-    if (enemyDefeatSound || true) { // Allow playing even if not explicitly set
-      // If sound is muted, don't play anything
-      if (isMuted) {
-        console.log("Enemy defeat sound skipped (muted)");
-        return;
-      }
-      
-      // Create a fresh audio instance to avoid playback issues
+    const { isMuted } = get();
+    
+    // If sound is muted, don't play anything
+    if (isMuted) {
+      console.log("Enemy defeat sound skipped (muted)");
+      return;
+    }
+    
+    console.log("Playing ENEMY DEFEAT sound effect");
+    
+    // Use global sound player if available, otherwise fallback
+    if (typeof window !== 'undefined' && window.playSoundEffect) {
+      window.playSoundEffect("/sounds/enemy_defeat.mp3", 0.4);
+    } else {
+      // Fallback method
       const fxSound = new Audio("/sounds/enemy_defeat.mp3");
       fxSound.volume = 0.4;
-      
-      console.log("Playing ENEMY DEFEAT sound effect");
-      
-      // Force browser to play the sound
-      const playPromise = fxSound.play();
-      if (playPromise !== undefined) {
-        playPromise.then(() => {
-          console.log("✅ Enemy defeat sound playing successfully!");
-        }).catch(error => {
-          console.log("⚠️ Enemy defeat sound play prevented:", error);
-          // Try a fallback technique
-          setTimeout(() => {
-            fxSound.play()
-              .then(() => console.log("✅ Enemy defeat sound played on second attempt!"))
-              .catch(err => console.log("❌ Second attempt failed too:", err));
-          }, 100);
-        });
-      }
+      fxSound.play().catch(err => console.log("Audio play error:", err));
+    }
+  },
+  
+  playHit: () => {
+    const { isMuted } = get();
+    
+    // If sound is muted, don't play anything
+    if (isMuted) {
+      console.log("Hit sound skipped (muted)");
+      return;
+    }
+    
+    console.log("Playing HIT/DAMAGE sound effect");
+    
+    // Use global sound player if available, otherwise fallback
+    if (typeof window !== 'undefined' && window.playSoundEffect) {
+      window.playSoundEffect("/sounds/hit.mp3", 0.3);
+    } else {
+      // Fallback method
+      const fxSound = new Audio("/sounds/hit.mp3");
+      fxSound.volume = 0.3;
+      fxSound.play().catch(err => console.log("Audio play error:", err));
     }
   }
 }));

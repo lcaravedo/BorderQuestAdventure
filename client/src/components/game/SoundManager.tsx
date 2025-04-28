@@ -1,7 +1,16 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useAudio } from "@/lib/stores/useAudio";
 import { useGame } from "@/lib/stores/useGame";
 import { Howl } from "howler";
+
+// Extend Window interface to add our global sound methods
+declare global {
+  interface Window {
+    playSoundEffect: (url: string, volume?: number) => void;
+    audioContext: AudioContext | null;
+    audioInitialized: boolean;
+  }
+}
 
 // SoundManager handles all game audio, ensuring sounds are loaded and played correctly
 export default function SoundManager() {
@@ -11,15 +20,87 @@ export default function SoundManager() {
     isMuted, 
     toggleMute 
   } = useAudio();
+  
+  const [audioInitialized, setAudioInitialized] = useState(false);
 
-  // Initialize all sounds
+  // Initialize audio context and set up global sound helpers
   useEffect(() => {
-    // Load the game sounds using Howler
-    const loadSounds = async () => {
-      // This would be replaced with Howler implementation, but we're using
-      // the HTML Audio element directly via the useAudio store for now
+    // Initialize audio context (this works around browser autoplay restrictions)
+    const setupAudio = () => {
+      // Create AudioContext only once
+      if (!window.audioContext) {
+        // Use standard or webkit prefix
+        const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
+        window.audioContext = new AudioContext();
+      }
       
-      // Optional: Add additional sound loading here if needed
+      // Create global helper for playing sound effects
+      window.playSoundEffect = (url: string, volume = 0.3) => {
+        if (isMuted) return; // Skip if muted
+        
+        // Create and play a sound immediately
+        const audio = new Audio(url);
+        audio.volume = volume;
+        
+        // Play with error handling
+        const playPromise = audio.play();
+        if (playPromise !== undefined) {
+          playPromise.catch(error => {
+            console.log(`Failed to play sound ${url}:`, error);
+          });
+        }
+      };
+      
+      // Pre-cache our sound effects for better performance
+      const preloadSounds = [
+        '/sounds/hit.mp3',
+        '/sounds/success.mp3', 
+        '/sounds/enemy_defeat.mp3',
+        '/sounds/boss_victory.mp3',
+        '/sounds/save_checkpoint.mp3',
+        '/sounds/border_crossing.mp3',
+        '/sounds/bark.mp3'
+      ];
+      
+      // Create Audio objects for each sound to preload them
+      preloadSounds.forEach(url => {
+        const audio = new Audio(url);
+        // Set to preload but not play
+        audio.preload = 'auto';
+        // Load a tiny bit of the audio to prime the browser
+        audio.load();
+      });
+      
+      // Mark audio as initialized
+      window.audioInitialized = true;
+      setAudioInitialized(true);
+      console.log("🔊 Audio system successfully initialized");
+    };
+    
+    // Run setup
+    setupAudio();
+  }, [isMuted]);
+  
+  // Initialize all sounds on first load
+  useEffect(() => {
+    // Load the game sounds using native Audio API
+    const loadSounds = async () => {
+      if (typeof window !== 'undefined') {
+        try {
+          // Create the background music
+          const bgMusic = new Audio('/sounds/game_music.mp3');
+          bgMusic.loop = true;
+          bgMusic.volume = 0.2;
+          bgMusic.preload = 'auto';
+          
+          // Store in global state
+          useAudio.getState().setBackgroundMusic(bgMusic);
+          
+          console.log("🎵 All audio assets loaded and ready");
+        } catch (error) {
+          console.error("Failed to initialize audio:", error);
+        }
+      }
     };
     
     loadSounds();
@@ -27,14 +108,17 @@ export default function SoundManager() {
 
   // Play/pause background music based on game phase
   useEffect(() => {
-    if (!backgroundMusic) return;
+    if (!backgroundMusic || !audioInitialized) return;
     
     if (phase === "playing") {
       // Only play if not muted
       if (!isMuted) {
-        backgroundMusic.play().catch(err => {
-          console.log("Background music autoplay prevented:", err);
-        });
+        const playPromise = backgroundMusic.play();
+        if (playPromise !== undefined) {
+          playPromise.catch(err => {
+            console.log("Background music autoplay prevented:", err);
+          });
+        }
       }
     } else {
       backgroundMusic.pause();
@@ -43,30 +127,52 @@ export default function SoundManager() {
     return () => {
       backgroundMusic.pause();
     };
-  }, [phase, backgroundMusic, isMuted]);
+  }, [phase, backgroundMusic, isMuted, audioInitialized]);
   
   // Handle user interaction to enable audio (browser autoplay policy)
   useEffect(() => {
+    // This function needs to be called after user interaction
     const enableAudio = () => {
-      if (backgroundMusic && phase === "playing" && !isMuted) {
-        // Try to play the background music
-        backgroundMusic.play().catch(err => {
-          console.log("Background music play prevented:", err);
+      // Resume AudioContext if it's suspended
+      if (window.audioContext && window.audioContext.state === 'suspended') {
+        window.audioContext.resume().then(() => {
+          console.log("AudioContext resumed successfully");
         });
       }
+      
+      // Try to play the background music
+      if (backgroundMusic && phase === "playing" && !isMuted) {
+        const playPromise = backgroundMusic.play();
+        if (playPromise !== undefined) {
+          playPromise.catch(err => {
+            console.log("Background music play prevented:", err);
+          });
+        }
+      }
+      
+      // Play a silent sound to unlock audio on iOS
+      const silentSound = new Audio("data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4LjI5LjEwMAAAAAAAAAAAAAAA//tQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAACAAABBgCAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgAAAAA=");
+      silentSound.play();
+      
+      // Mark as initialized
+      window.audioInitialized = true;
+      setAudioInitialized(true);
     };
 
-    // These events indicate user interaction
-    window.addEventListener("click", enableAudio);
-    window.addEventListener("touchstart", enableAudio);
-    window.addEventListener("keydown", enableAudio);
+    // Listen for various user interactions
+    const events = ["click", "touchstart", "keydown"];
+    
+    // Only add these listeners if audio isn't initialized yet
+    if (!audioInitialized) {
+      events.forEach(event => window.addEventListener(event, enableAudio, { once: true }));
+    }
     
     return () => {
-      window.removeEventListener("click", enableAudio);
-      window.removeEventListener("touchstart", enableAudio);
-      window.removeEventListener("keydown", enableAudio);
+      if (!audioInitialized) {
+        events.forEach(event => window.removeEventListener(event, enableAudio));
+      }
     };
-  }, [backgroundMusic, phase, isMuted]);
+  }, [backgroundMusic, phase, isMuted, audioInitialized]);
 
   // Keyboard listener for mute toggle (N key) - changed from M to avoid conflict with sword attack
   useEffect(() => {
@@ -76,9 +182,12 @@ export default function SoundManager() {
         
         // If we're unmuting and the game is playing, start the background music
         if (phase === "playing" && backgroundMusic && !isMuted) {
-          backgroundMusic.play().catch(err => {
-            console.log("Background music play prevented:", err);
-          });
+          const playPromise = backgroundMusic.play();
+          if (playPromise !== undefined) {
+            playPromise.catch(err => {
+              console.log("Background music play prevented:", err);
+            });
+          }
         }
       }
     };
