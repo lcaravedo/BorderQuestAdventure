@@ -131,6 +131,29 @@ function App() {
 
   // Let the user know what's going on
   console.log("Current game phase:", phase);
+  
+  // Play or pause background music based on game phase
+  useEffect(() => {
+    const { backgroundMusic, isMuted } = useAudio.getState();
+    
+    if (!backgroundMusic) return;
+    
+    if (phase === "playing" || phase === "upgrading") {
+      // Start playing background music when game is active
+      if (!isMuted) {
+        backgroundMusic.play().catch(err => {
+          console.log("Background music play prevented on phase change:", err);
+          // Try again after user interaction
+          document.addEventListener('click', () => {
+            backgroundMusic.play().catch(e => console.log("Still couldn't play music:", e));
+          }, { once: true });
+        });
+      }
+    } else if (phase === "ready" || phase === "ended") {
+      // Pause music when not in gameplay
+      backgroundMusic.pause();
+    }
+  }, [phase]);
 
   // Add a manual retry button if showing the canvas fails
   if (!showCanvas) {
