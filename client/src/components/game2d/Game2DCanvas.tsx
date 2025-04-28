@@ -1915,10 +1915,10 @@ export default function Game2DCanvas() {
               y: obstacle.y - 30 // Slightly above the checkpoint
             };
             
-            // Play success sound
-            playSuccess();
+            // Play checkpoint save sound
+            playSave();
             
-            console.log("Checkpoint activated!");
+            console.log("Checkpoint activated! Progress saved!");
           }
         }
       });
@@ -1973,7 +1973,7 @@ export default function Game2DCanvas() {
       
       if (distanceToExit < 30 && distanceToExitY < 100) {
         // Player reached the exit/border
-        playSuccess();
+        playLevelComplete();
         
         // Add 100 points for completing the level
         setScore(prevScore => prevScore + 100);
