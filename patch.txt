@@ -1,0 +1,12 @@
+--- a/client/src/components/game2d/Game2DCanvas.tsx
++++ b/client/src/components/game2d/Game2DCanvas.tsx
+@@ -1707,6 +1707,9 @@
+               const pointsEarned = enemy.isBoss ? 200 : 50;
+               setScore(prevScore => prevScore + pointsEarned);
+               console.log(`Enemy defeated! +${pointsEarned} points! Score: ${score + pointsEarned}`);
++              
++              // Increment kill counter
++              incrementKills();
+               
+               // Remove enemy
+               enemiesRef.current.splice(index, 1);

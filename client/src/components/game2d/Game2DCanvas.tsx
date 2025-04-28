@@ -689,6 +689,23 @@ export default function Game2DCanvas() {
     }
   };
 
+  // Helper function to handle enemy defeats
+  const handleEnemyDefeat = useCallback((enemy: any, index: number) => {
+    // Add score - different points based on enemy type
+    const pointsEarned = enemy.isBoss ? 200 : 50;
+    setScore(prevScore => prevScore + pointsEarned);
+    
+    // Increment kill counter
+    incrementKills();
+    console.log(`Enemy defeated! +${pointsEarned} points! Score: ${score + pointsEarned}, Kills: ${killCount + 1}`);
+    
+    // Remove enemy
+    enemiesRef.current.splice(index, 1);
+    
+    // Play success sound
+    playSuccess();
+  }, [incrementKills, killCount, playSuccess, score]);
+
   // Main game rendering and update loop
   useEffect(() => {
     if (!canvasRef.current || !levelData || phase !== 'playing') return;
