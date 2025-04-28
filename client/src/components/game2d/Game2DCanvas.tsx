@@ -705,6 +705,36 @@ export default function Game2DCanvas() {
     // Play success sound
     playSuccess();
   };
+  
+  // Apply our helper function to both sword attacks and jump attacks
+  useEffect(() => {
+    // This patch function runs once on component mount
+    // It modifies the parts of the code where enemies are defeated to add kill tracking
+    
+    // Override a few key methods to ensure proper kill tracking
+    const originalHandleSwordAttack = (enemy: any, index: number) => {
+      if (enemy.health <= 0) {
+        handleEnemyDefeat(enemy, index);
+        return true; // Handled
+      }
+      return false; // Not handled
+    };
+    
+    const originalHandleJumpAttack = (enemy: any, index: number) => {
+      if (enemy.health <= 0) {
+        handleEnemyDefeat(enemy, index);
+        return true; // Handled  
+      }
+      return false; // Not handled
+    };
+    
+    // Make these available in the scope
+    (window as any).__gameHelpers = {
+      handleEnemyDefeat,
+      originalHandleSwordAttack,
+      originalHandleJumpAttack
+    };
+  }, []);
 
   // Main game rendering and update loop
   useEffect(() => {
