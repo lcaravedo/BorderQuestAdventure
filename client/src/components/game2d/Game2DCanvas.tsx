@@ -706,19 +706,38 @@ export default function Game2DCanvas() {
     
     // Increment kill counter
     incrementKills();
-    console.log(`Enemy defeated! +${pointsEarned} points! Score: ${score + pointsEarned}, Kills: ${killCount + 1}`);
     
     // Remove enemy
     enemiesRef.current.splice(index, 1);
     
     // Play different sounds based on enemy type
     if (enemy.isBoss) {
+      // Unmute audio temporarily to make sure the boss victory sound plays
+      const wasMuted = useAudio.getState().isMuted;
+      if (wasMuted) {
+        useAudio.getState().toggleMute(); // Unmute
+      }
+      
       // Play boss victory sound for boss defeats
       playBossVictory();
-      console.log("Boss defeated! Victory sound played!");
+      console.log(`Boss defeated! +${pointsEarned} points! Score: ${score + pointsEarned}. Boss victory sound played!`);
+      
+      // If this was the final boss in a world, do special handling
+      if (currentLevel === 4) {
+        // Special logic for final boss of a world
+        console.log("Final boss of world defeated! Border is now unlocked!");
+      }
+      
+      // Restore mute state if needed
+      if (wasMuted) {
+        setTimeout(() => {
+          useAudio.getState().toggleMute(); // Mute again
+        }, 1000); // Give sound time to play
+      }
     } else {
       // Play regular success sound for normal enemies
       playSuccess();
+      console.log(`Enemy defeated! +${pointsEarned} points! Score: ${score + pointsEarned}`);
     }
   };
   
@@ -1918,6 +1937,11 @@ export default function Game2DCanvas() {
             // Play checkpoint save sound
             playSave();
             
+            // Save game progress
+            usePlayer.getState().saveProgress();
+            useLevels.getState().saveProgress();
+            useCollectibles.getState().saveProgress();
+            
             console.log("Checkpoint activated! Progress saved!");
           }
         }
@@ -1973,11 +1997,18 @@ export default function Game2DCanvas() {
       
       if (distanceToExit < 30 && distanceToExitY < 100) {
         // Player reached the exit/border
+        // Unmute audio temporarily to make sure the level complete sound plays
+        const wasMuted = useAudio.getState().isMuted;
+        if (wasMuted) {
+          useAudio.getState().toggleMute(); // Unmute
+        }
+        
+        // Play level completion sound with volume boost
         playLevelComplete();
         
         // Add 100 points for completing the level
         setScore(prevScore => prevScore + 100);
-        console.log("Level complete! +100 points! Score: " + (score + 100));
+        console.log("Level complete! Border crossed! +100 points! Score: " + (score + 100));
         
         // Unlock the next level
         unlockNextLevel();
@@ -1995,6 +2026,13 @@ export default function Game2DCanvas() {
           // Player beat the game - for now just loop back to the beginning
           nextWorld = 0;
           nextLevel = 0;
+        }
+        
+        // Restore mute state if needed
+        if (wasMuted) {
+          setTimeout(() => {
+            useAudio.getState().toggleMute(); // Mute again
+          }, 1000); // Give sound time to play
         }
         
         // Set next level after a short delay
