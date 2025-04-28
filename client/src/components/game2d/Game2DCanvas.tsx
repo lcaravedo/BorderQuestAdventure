@@ -636,7 +636,7 @@ export default function Game2DCanvas() {
     
     // Draw small labels
     ctx.font = '8px "Press Start 2P", monospace';
-    ctx.fillText("Bones", width - 180, tokenY + 25);
+    ctx.fillText("Coins", width - 180, tokenY + 25);
     ctx.fillText("Kills", width - 130, tokenY + 25);
     ctx.fillText("Visas", width - 80, tokenY + 25);
     
@@ -2190,9 +2190,9 @@ export default function Game2DCanvas() {
             
             // Collect the item
             if (obstacle.type === 'bone') {
-              // Collect bone
+              // Collect coin (bones are displayed as coins)
               handleCollectItem(collectibleId, 'bone');
-              console.log(`Bone collected! Total bones: ${boneCount + 1}`);
+              console.log(`Coin collected! Total coins: ${boneCount + 1}`);
               playSuccess();
             } else if (obstacle.type === 'visa') {
               // Collect visa
