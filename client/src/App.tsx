@@ -23,15 +23,7 @@ const keyboardMap = [
 // Main App component
 function App() {
   const { phase } = useGame();
-  const { 
-    setBackgroundMusic, 
-    setHitSound, 
-    setSuccessSound,
-    setBossVictorySound,
-    setSaveSound,
-    setLevelCompleteSound,
-    setBarkSound
-  } = useAudio();
+  const { setBackgroundMusic } = useAudio();
   const [showCanvas, setShowCanvas] = useState(false);
 
   // Initialize audio assets and game state
@@ -57,43 +49,6 @@ function App() {
       
       // Try to play music automatically
       setTimeout(startMusic, 1000);
-
-      // Hit sound (used for taking damage)
-      const hitSound = new Audio("/sounds/hit.mp3");
-      hitSound.volume = 0.3;
-      setHitSound(hitSound);
-
-      // Success sound (used for collectibles only)
-      const successSound = new Audio("/sounds/success.mp3");
-      successSound.volume = 0.3;
-      setSuccessSound(successSound);
-      
-      // Boss victory sound (used when defeating bosses)
-      const bossVictorySound = new Audio("/sounds/boss_victory.mp3");
-      bossVictorySound.volume = 0.5;
-      setBossVictorySound(bossVictorySound);
-      
-      // Save game sound (used when reaching checkpoints)
-      const saveSound = new Audio("/sounds/save_checkpoint.mp3");
-      saveSound.volume = 0.4;
-      setSaveSound(saveSound);
-      
-      // Level complete sound (used when reaching the border)
-      const levelCompleteSound = new Audio("/sounds/border_crossing.mp3");
-      levelCompleteSound.volume = 0.5;
-      setLevelCompleteSound(levelCompleteSound);
-      
-      // Enemy defeat sound (replaces success sound for enemy defeats)
-      const enemyDefeatSound = new Audio("/sounds/enemy_defeat.mp3");
-      enemyDefeatSound.volume = 0.4;
-      
-      // Override the success sound specifically for enemy defeats
-      window.enemyDefeatSound = enemyDefeatSound;
-      
-      // Bark sound (used for bark attack)
-      const barkSound = new Audio("/sounds/bark.mp3");
-      barkSound.volume = 0.25;
-      setBarkSound(barkSound);
       
       console.log("All audio assets created");
       
@@ -104,15 +59,7 @@ function App() {
 
     // Load audio immediately
     loadAudio();
-  }, [
-    setBackgroundMusic, 
-    setHitSound, 
-    setSuccessSound, 
-    setBossVictorySound, 
-    setSaveSound,
-    setLevelCompleteSound,
-    setBarkSound
-  ]);
+  }, [setBackgroundMusic]);
   
   // Add a listener for manual phase changes from our debug overlay
   const { setPhase } = useGame() as any;

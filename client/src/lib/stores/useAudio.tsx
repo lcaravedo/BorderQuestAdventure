@@ -1,28 +1,23 @@
 import { create } from "zustand";
 
+// Define the shape of our audio state
 interface AudioState {
+  // State
   backgroundMusic: HTMLAudioElement | null;
-  hitSound: HTMLAudioElement | null;
-  successSound: HTMLAudioElement | null;
-  bossVictorySound: HTMLAudioElement | null;
-  saveSound: HTMLAudioElement | null;
-  levelCompleteSound: HTMLAudioElement | null;
-  barkSound: HTMLAudioElement | null;
-  enemyDefeatSound: HTMLAudioElement | null;
   isMuted: boolean;
+  audioInitialized: boolean;
   
-  // Setter functions
+  // Setters
   setBackgroundMusic: (music: HTMLAudioElement) => void;
-  setHitSound: (sound: HTMLAudioElement) => void;
-  setSuccessSound: (sound: HTMLAudioElement) => void;
-  setBossVictorySound: (sound: HTMLAudioElement) => void;
-  setSaveSound: (sound: HTMLAudioElement) => void;
-  setLevelCompleteSound: (sound: HTMLAudioElement) => void;
-  setBarkSound: (sound: HTMLAudioElement) => void;
-  setEnemyDefeatSound: (sound: HTMLAudioElement) => void;
+  setAudioInitialized: (initialized: boolean) => void;
   
-  // Control functions
+  // Controls
   toggleMute: () => void;
+  
+  // Helper function
+  playSound: (url: string, volume?: number) => void;
+  
+  // Sound effects
   playHit: () => void;
   playSuccess: () => void;
   playBossVictory: () => void;
@@ -32,188 +27,131 @@ interface AudioState {
   playEnemyDefeat: () => void;
 }
 
+/**
+ * Audio store for handling game sounds
+ */
 export const useAudio = create<AudioState>((set, get) => ({
+  // State
   backgroundMusic: null,
-  hitSound: null,
-  successSound: null,
-  bossVictorySound: null,
-  saveSound: null,
-  levelCompleteSound: null,
-  barkSound: null,
-  enemyDefeatSound: null,
-  isMuted: false, // Start unmuted by default
+  isMuted: false,
+  audioInitialized: false,
   
+  // Setters
   setBackgroundMusic: (music) => set({ backgroundMusic: music }),
-  setHitSound: (sound) => set({ hitSound: sound }),
-  setSuccessSound: (sound) => set({ successSound: sound }),
-  setBossVictorySound: (sound) => set({ bossVictorySound: sound }),
-  setSaveSound: (sound) => set({ saveSound: sound }),
-  setLevelCompleteSound: (sound) => set({ levelCompleteSound: sound }),
-  setBarkSound: (sound) => set({ barkSound: sound }),
-  setEnemyDefeatSound: (sound) => set({ enemyDefeatSound: sound }),
+  setAudioInitialized: (initialized) => set({ audioInitialized: initialized }),
   
+  // Controls
   toggleMute: () => {
     const { isMuted } = get();
     const newMutedState = !isMuted;
     
-    // Just update the muted state
     set({ isMuted: newMutedState });
-    
-    // Log the change
     console.log(`Sound ${newMutedState ? 'muted' : 'unmuted'}`);
   },
   
+  // Helper function to play sound with our global player
+  playSound: (url: string, volume = 0.3) => {
+    const { isMuted } = get();
+    
+    if (isMuted) return;
+    
+    // Use global player if available
+    if (typeof window !== 'undefined' && window.playSoundEffect) {
+      window.playSoundEffect(url, volume);
+    } else {
+      try {
+        // Fallback to regular Audio API
+        const sound = new Audio(url);
+        sound.volume = volume;
+        sound.play().catch(err => console.log("Audio play error:", err));
+      } catch (err) {
+        console.error("Failed to play sound:", err);
+      }
+    }
+  },
+  
+  // Sound effects
   playHit: () => {
     const { isMuted } = get();
     
-    // If sound is muted, don't play anything
     if (isMuted) {
       console.log("Hit sound skipped (muted)");
       return;
     }
     
     console.log("Playing HIT/DAMAGE sound effect");
-    
-    // Use global sound player if available, otherwise fallback
-    if (typeof window !== 'undefined' && window.playSoundEffect) {
-      window.playSoundEffect("/sounds/hit.mp3", 0.3);
-    } else {
-      // Fallback method
-      const fxSound = new Audio("/sounds/hit.mp3");
-      fxSound.volume = 0.3;
-      fxSound.play().catch(err => console.log("Audio play error:", err));
-    }
+    useAudio.getState().playSound("/sounds/hit.mp3", 0.3);
   },
   
   playSuccess: () => {
     const { isMuted } = get();
     
-    // If sound is muted, don't play anything
     if (isMuted) {
       console.log("Success sound skipped (muted)");
       return;
     }
     
     console.log("Playing COLLECTIBLE sound effect");
-    
-    // Use global sound player if available, otherwise fallback
-    if (typeof window !== 'undefined' && window.playSoundEffect) {
-      window.playSoundEffect("/sounds/success.mp3", 0.3);
-    } else {
-      // Fallback method
-      const fxSound = new Audio("/sounds/success.mp3");
-      fxSound.volume = 0.3;
-      fxSound.play().catch(err => console.log("Audio play error:", err));
-    }
+    useAudio.getState().playSound("/sounds/success.mp3", 0.3);
   },
   
   playBossVictory: () => {
     const { isMuted } = get();
     
-    // If sound is muted, don't play anything
     if (isMuted) {
       console.log("Boss victory sound skipped (muted)");
       return;
     }
     
     console.log("Playing BOSS VICTORY sound effect");
-    
-    // Use global sound player if available, otherwise fallback
-    if (typeof window !== 'undefined' && window.playSoundEffect) {
-      window.playSoundEffect("/sounds/boss_victory.mp3", 0.5);
-    } else {
-      // Fallback method
-      const fxSound = new Audio("/sounds/boss_victory.mp3");
-      fxSound.volume = 0.5;
-      fxSound.play().catch(err => console.log("Audio play error:", err));
-    }
+    useAudio.getState().playSound("/sounds/boss_victory.mp3", 0.5);
   },
   
   playSave: () => {
     const { isMuted } = get();
     
-    // If sound is muted, don't play anything
     if (isMuted) {
       console.log("Save sound skipped (muted)");
       return;
     }
     
     console.log("Playing CHECKPOINT sound effect");
-    
-    // Use global sound player if available, otherwise fallback
-    if (typeof window !== 'undefined' && window.playSoundEffect) {
-      window.playSoundEffect("/sounds/save_checkpoint.mp3", 0.4);
-    } else {
-      // Fallback method
-      const fxSound = new Audio("/sounds/save_checkpoint.mp3");
-      fxSound.volume = 0.4;
-      fxSound.play().catch(err => console.log("Audio play error:", err));
-    }
+    useAudio.getState().playSound("/sounds/save_checkpoint.mp3", 0.4);
   },
   
   playLevelComplete: () => {
     const { isMuted } = get();
     
-    // If sound is muted, don't play anything
     if (isMuted) {
       console.log("Level complete sound skipped (muted)");
       return;
     }
     
     console.log("Playing BORDER CROSSING sound effect");
-    
-    // Use global sound player if available, otherwise fallback
-    if (typeof window !== 'undefined' && window.playSoundEffect) {
-      window.playSoundEffect("/sounds/border_crossing.mp3", 0.5);
-    } else {
-      // Fallback method
-      const fxSound = new Audio("/sounds/border_crossing.mp3");
-      fxSound.volume = 0.5;
-      fxSound.play().catch(err => console.log("Audio play error:", err));
-    }
+    useAudio.getState().playSound("/sounds/border_crossing.mp3", 0.5);
   },
   
   playBark: () => {
     const { isMuted } = get();
     
-    // If sound is muted, don't play anything
     if (isMuted) {
       console.log("Bark sound skipped (muted)");
       return;
     }
     
     console.log("Playing BARK sound effect");
-    
-    // Use global sound player if available, otherwise fallback
-    if (typeof window !== 'undefined' && window.playSoundEffect) {
-      window.playSoundEffect("/sounds/bark.mp3", 0.25);
-    } else {
-      // Fallback method
-      const fxSound = new Audio("/sounds/bark.mp3");
-      fxSound.volume = 0.25;
-      fxSound.play().catch(err => console.log("Audio play error:", err));
-    }
+    useAudio.getState().playSound("/sounds/bark.mp3", 0.25);
   },
   
   playEnemyDefeat: () => {
     const { isMuted } = get();
     
-    // If sound is muted, don't play anything
     if (isMuted) {
       console.log("Enemy defeat sound skipped (muted)");
       return;
     }
     
     console.log("Playing ENEMY DEFEAT sound effect");
-    
-    // Use global sound player if available, otherwise fallback
-    if (typeof window !== 'undefined' && window.playSoundEffect) {
-      window.playSoundEffect("/sounds/enemy_defeat.mp3", 0.4);
-    } else {
-      // Fallback method
-      const fxSound = new Audio("/sounds/enemy_defeat.mp3");
-      fxSound.volume = 0.4;
-      fxSound.play().catch(err => console.log("Audio play error:", err));
-    }
+    useAudio.getState().playSound("/sounds/enemy_defeat.mp3", 0.4);
   }
 }));
