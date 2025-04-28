@@ -503,6 +503,27 @@ export default function Game2DCanvas() {
     ctx.lineWidth = 1;
     ctx.strokeRect(10, 10, 190, 40);
     
+    // 2. Center panel: Score
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+    ctx.fillRect(width/2 - 100, 10, 200, 30);
+    ctx.strokeStyle = '#000000';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(width/2 - 100, 10, 200, 30);
+    
+    // 3. Right panel: Collectibles and kill count
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+    ctx.fillRect(width - 210, 10, 200, 40);
+    ctx.strokeStyle = '#000000';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(width - 210, 10, 200, 40);
+    
+    // Draw score in center panel
+    ctx.fillStyle = '#000000';
+    ctx.font = '16px "Press Start 2P", monospace';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(`Score: ${score}`, width/2, 25);
+    
     // Draw lives text
     ctx.fillStyle = '#000000';
     ctx.font = '12px "Press Start 2P", monospace';
@@ -517,6 +538,30 @@ export default function Game2DCanvas() {
     const iconSize = 20;
     const iconSpacing = 25;
     let iconX = 105;
+    
+    // Draw collectibles in right panel
+    ctx.fillStyle = '#000000';
+    ctx.font = '12px "Press Start 2P", monospace';
+    ctx.textAlign = 'left';
+    ctx.fillText('Collectibles:', width - 205, 15);
+    
+    // Bone count
+    ctx.fillStyle = '#8B4513';
+    ctx.beginPath();
+    ctx.arc(width - 80, 25, 10, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#000000';
+    ctx.textAlign = 'left';
+    ctx.fillText(`${boneCount}`, width - 65, 20);
+    
+    // Kill count
+    ctx.fillStyle = '#FF4444';
+    ctx.beginPath();
+    ctx.arc(width - 40, 25, 10, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#000000';
+    ctx.textAlign = 'left';
+    ctx.fillText(`${killCount}`, width - 25, 20);
     
     // Draw bird icon (speed boost powerup)
     ctx.fillStyle = '#000000';
@@ -2280,6 +2325,17 @@ export default function Game2DCanvas() {
           40,
           40
         );
+      }
+      
+      // Handle powerup timer countdown
+      if (isPoweredUp && powerUpTimeRemaining > 0) {
+        // Countdown the powerup timer 
+        const currentPowerUpTime = Math.max(0, powerUpTimeRemaining - deltaTime * 16);
+        if (currentPowerUpTime <= 0) {
+          // Power-up expired
+          resetPowerUp();
+          console.log("Power-up expired!");
+        }
       }
       
       // Draw UI elements (health bar, lives)
