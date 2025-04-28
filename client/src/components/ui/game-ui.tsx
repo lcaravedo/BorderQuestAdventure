@@ -7,14 +7,20 @@ import { cn } from "@/lib/utils";
 import { Card } from "./card";
 import { Progress } from "./progress";
 import { Button } from "./button";
+import { ArrowUpCircle } from "lucide-react";
 
 export default function GameUI() {
-  const { end } = useGame();
+  const { setPhase } = useGame();
   const { health, maxHealth } = usePlayer();
-  const { collectibles } = useCollectibles();
+  const { collectibles, boneCount } = useCollectibles();
   const { currentLevel, currentWorld } = useLevels();
   const [showControls, setShowControls] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
+  
+  // Open upgrade menu
+  const openUpgradeMenu = () => {
+    setPhase('upgrading');
+  };
   
   // Health percentage
   const healthPercentage = (health / maxHealth) * 100;
@@ -142,7 +148,7 @@ export default function GameUI() {
               <Button 
                 variant="destructive" 
                 className="w-full"
-                onClick={() => end()}
+                onClick={() => setPhase('ready')}
               >
                 QUIT TO MENU
               </Button>
@@ -157,6 +163,16 @@ export default function GameUI() {
         onClick={() => setShowControls(true)}
       >
         ?
+      </button>
+      
+      {/* Upgrade button bottom left */}
+      <button 
+        className="absolute bottom-4 left-4 px-3 py-2 bg-yellow-600/90 text-white rounded-lg flex items-center justify-center font-bold border border-yellow-500 hover:bg-yellow-700 transition-colors"
+        onClick={openUpgradeMenu}
+      >
+        <ArrowUpCircle className="mr-1 h-4 w-4" />
+        <span>Upgrades</span>
+        <span className="ml-2 px-1.5 py-0.5 bg-white text-yellow-800 rounded-full text-xs">{boneCount}</span>
       </button>
     </>
   );
