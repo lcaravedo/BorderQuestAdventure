@@ -503,27 +503,6 @@ export default function Game2DCanvas() {
     ctx.lineWidth = 1;
     ctx.strokeRect(10, 10, 190, 40);
     
-    // 2. Center panel: Score
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-    ctx.fillRect(width/2 - 100, 10, 200, 30);
-    ctx.strokeStyle = '#000000';
-    ctx.lineWidth = 1;
-    ctx.strokeRect(width/2 - 100, 10, 200, 30);
-    
-    // 3. Right panel: Collectibles and kill count
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-    ctx.fillRect(width - 210, 10, 200, 40);
-    ctx.strokeStyle = '#000000';
-    ctx.lineWidth = 1;
-    ctx.strokeRect(width - 210, 10, 200, 40);
-    
-    // Draw score in center panel
-    ctx.fillStyle = '#000000';
-    ctx.font = '16px "Press Start 2P", monospace';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(`Score: ${score}`, width/2, 25);
-    
     // Draw lives text
     ctx.fillStyle = '#000000';
     ctx.font = '12px "Press Start 2P", monospace';
@@ -538,30 +517,6 @@ export default function Game2DCanvas() {
     const iconSize = 20;
     const iconSpacing = 25;
     let iconX = 105;
-    
-    // Draw collectibles in right panel
-    ctx.fillStyle = '#000000';
-    ctx.font = '12px "Press Start 2P", monospace';
-    ctx.textAlign = 'left';
-    ctx.fillText('Collectibles:', width - 205, 15);
-    
-    // Bone count
-    ctx.fillStyle = '#8B4513';
-    ctx.beginPath();
-    ctx.arc(width - 80, 25, 10, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = '#000000';
-    ctx.textAlign = 'left';
-    ctx.fillText(`${boneCount}`, width - 65, 20);
-    
-    // Kill count
-    ctx.fillStyle = '#FF4444';
-    ctx.beginPath();
-    ctx.arc(width - 40, 25, 10, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = '#000000';
-    ctx.textAlign = 'left';
-    ctx.fillText(`${killCount}`, width - 25, 20);
     
     // Draw bird icon (speed boost powerup)
     ctx.fillStyle = '#000000';
@@ -633,7 +588,7 @@ export default function Game2DCanvas() {
     ctx.textBaseline = 'middle';
     ctx.fillText(`Score: ${score}`, width/2, 25);
     
-    // 3. Right panel: World info and tokens
+    // 3. Right panel: World info
     ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
     ctx.fillRect(width - 200, 10, 190, 30);
     ctx.strokeStyle = '#000000';
@@ -654,15 +609,17 @@ export default function Game2DCanvas() {
     ctx.lineWidth = 1;
     ctx.strokeRect(width - 200, tokenY - 5, 190, 30);
     
-    // Draw coins collected
-    ctx.fillStyle = '#000000';
+    // Draw bones collected
+    ctx.fillStyle = '#8B4513';
     ctx.beginPath();
     ctx.arc(width - 180, tokenY + 10, 10, 0, Math.PI * 2);
-    ctx.stroke();
+    ctx.fill();
+    ctx.fillStyle = '#000000';
+    ctx.textAlign = 'center';
     ctx.fillText(boneCount.toString(), width - 160, tokenY + 10);
     
     // Draw kills counter
-    ctx.fillStyle = '#00AA00';
+    ctx.fillStyle = '#FF4444';
     ctx.beginPath();
     ctx.arc(width - 130, tokenY + 10, 10, 0, Math.PI * 2);
     ctx.fill();
@@ -679,9 +636,9 @@ export default function Game2DCanvas() {
     
     // Draw small labels
     ctx.font = '8px "Press Start 2P", monospace';
-    ctx.fillText("Coins", width - 180, tokenY + 25);
+    ctx.fillText("Bones", width - 180, tokenY + 25);
     ctx.fillText("Kills", width - 130, tokenY + 25);
-    ctx.fillText("Special", width - 80, tokenY + 25);
+    ctx.fillText("Visas", width - 80, tokenY + 25);
     
     // 5. Health bar at left below lives
     ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
