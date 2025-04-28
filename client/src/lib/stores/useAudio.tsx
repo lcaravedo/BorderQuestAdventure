@@ -8,6 +8,7 @@ interface AudioState {
   saveSound: HTMLAudioElement | null;
   levelCompleteSound: HTMLAudioElement | null;
   barkSound: HTMLAudioElement | null;
+  enemyDefeatSound: HTMLAudioElement | null;
   isMuted: boolean;
   
   // Setter functions
@@ -18,6 +19,7 @@ interface AudioState {
   setSaveSound: (sound: HTMLAudioElement) => void;
   setLevelCompleteSound: (sound: HTMLAudioElement) => void;
   setBarkSound: (sound: HTMLAudioElement) => void;
+  setEnemyDefeatSound: (sound: HTMLAudioElement) => void;
   
   // Control functions
   toggleMute: () => void;
@@ -27,6 +29,7 @@ interface AudioState {
   playSave: () => void;
   playLevelComplete: () => void;
   playBark: () => void;
+  playEnemyDefeat: () => void;
 }
 
 export const useAudio = create<AudioState>((set, get) => ({
@@ -37,6 +40,7 @@ export const useAudio = create<AudioState>((set, get) => ({
   saveSound: null,
   levelCompleteSound: null,
   barkSound: null,
+  enemyDefeatSound: null,
   isMuted: false, // Start unmuted by default
   
   setBackgroundMusic: (music) => set({ backgroundMusic: music }),
@@ -46,6 +50,7 @@ export const useAudio = create<AudioState>((set, get) => ({
   setSaveSound: (sound) => set({ saveSound: sound }),
   setLevelCompleteSound: (sound) => set({ levelCompleteSound: sound }),
   setBarkSound: (sound) => set({ barkSound: sound }),
+  setEnemyDefeatSound: (sound) => set({ enemyDefeatSound: sound }),
   
   toggleMute: () => {
     const { isMuted } = get();
@@ -249,6 +254,39 @@ export const useAudio = create<AudioState>((set, get) => ({
           setTimeout(() => {
             fxSound.play()
               .then(() => console.log("✅ Bark sound played on second attempt!"))
+              .catch(err => console.log("❌ Second attempt failed too:", err));
+          }, 100);
+        });
+      }
+    }
+  },
+  
+  playEnemyDefeat: () => {
+    const { enemyDefeatSound, isMuted } = get();
+    if (enemyDefeatSound || true) { // Allow playing even if not explicitly set
+      // If sound is muted, don't play anything
+      if (isMuted) {
+        console.log("Enemy defeat sound skipped (muted)");
+        return;
+      }
+      
+      // Create a fresh audio instance to avoid playback issues
+      const fxSound = new Audio("/sounds/enemy_defeat.mp3");
+      fxSound.volume = 0.4;
+      
+      console.log("Playing ENEMY DEFEAT sound effect");
+      
+      // Force browser to play the sound
+      const playPromise = fxSound.play();
+      if (playPromise !== undefined) {
+        playPromise.then(() => {
+          console.log("✅ Enemy defeat sound playing successfully!");
+        }).catch(error => {
+          console.log("⚠️ Enemy defeat sound play prevented:", error);
+          // Try a fallback technique
+          setTimeout(() => {
+            fxSound.play()
+              .then(() => console.log("✅ Enemy defeat sound played on second attempt!"))
               .catch(err => console.log("❌ Second attempt failed too:", err));
           }, 100);
         });
