@@ -690,7 +690,7 @@ export default function Game2DCanvas() {
   };
 
   // Helper function to handle enemy defeats
-  const handleEnemyDefeat = useCallback((enemy: any, index: number) => {
+  const handleEnemyDefeat = (enemy: any, index: number) => {
     // Add score - different points based on enemy type
     const pointsEarned = enemy.isBoss ? 200 : 50;
     setScore(prevScore => prevScore + pointsEarned);
@@ -704,7 +704,7 @@ export default function Game2DCanvas() {
     
     // Play success sound
     playSuccess();
-  }, [incrementKills, killCount, playSuccess, score]);
+  };
 
   // Main game rendering and update loop
   useEffect(() => {
