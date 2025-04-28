@@ -482,76 +482,175 @@ export default function Game2DCanvas() {
     }
   };
   
-  // Function to draw the UI (health, lives, score)
+  // Function to draw the UI (health, lives, score) based on the template
   const drawUI = (ctx: CanvasRenderingContext2D) => {
-    // Draw score at top center
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
-    const scoreWidth = 150;
-    ctx.fillRect(width/2 - scoreWidth/2, 10, scoreWidth, 30);
+    // === TOP UI ELEMENTS (3 panels) ===
     
-    ctx.fillStyle = '#FFFFFF';
+    // 1. Left panel: Lives and Power Ups
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+    ctx.fillRect(10, 10, 190, 40); // Lives & powerups panel
+    ctx.strokeStyle = '#000000';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(10, 10, 190, 40);
+    
+    // Draw lives text
+    ctx.fillStyle = '#000000';
+    ctx.font = '12px "Press Start 2P", monospace';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'top';
+    ctx.fillText(`Lives - ${hearts}`, 15, 15);
+    
+    // Draw power ups
+    ctx.fillText('Power Ups:', 15, 32);
+    
+    // Draw powerup icons
+    const iconSize = 20;
+    const iconSpacing = 25;
+    let iconX = 105;
+    
+    // Draw bird icon (speed boost powerup)
+    ctx.fillStyle = '#000000';
+    if (dashLevel > 1) {
+      // Bird icon (simplified)
+      ctx.beginPath();
+      ctx.moveTo(iconX, 35);
+      ctx.lineTo(iconX + 10, 30);
+      ctx.lineTo(iconX + 16, 35);
+      ctx.lineTo(iconX + 10, 45);
+      ctx.closePath();
+      ctx.fill();
+    } else {
+      ctx.globalAlpha = 0.3;
+      ctx.beginPath();
+      ctx.moveTo(iconX, 35);
+      ctx.lineTo(iconX + 10, 30);
+      ctx.lineTo(iconX + 16, 35);
+      ctx.lineTo(iconX + 10, 45);
+      ctx.closePath();
+      ctx.fill();
+      ctx.globalAlpha = 1.0;
+    }
+    
+    // Draw jump boost powerup
+    iconX += iconSpacing;
+    if (barkPower > 1) {
+      // Wind/bark icon (simplified)
+      ctx.fillStyle = '#0000FF';
+      ctx.beginPath();
+      ctx.arc(iconX + 8, 35, 8, 0, Math.PI * 2);
+      ctx.fill();
+    } else {
+      ctx.fillStyle = '#0000FF';
+      ctx.globalAlpha = 0.3;
+      ctx.beginPath();
+      ctx.arc(iconX + 8, 35, 8, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.globalAlpha = 1.0;
+    }
+    
+    // Draw invincibility powerup
+    iconX += iconSpacing;
+    if (isPoweredUp) {
+      // Shield/invincibility icon
+      ctx.fillStyle = '#000000';
+      ctx.beginPath();
+      ctx.arc(iconX + 8, 35, 8, 0, Math.PI * 2);
+      ctx.fill();
+    } else {
+      ctx.fillStyle = '#000000';
+      ctx.globalAlpha = 0.3;
+      ctx.beginPath();
+      ctx.arc(iconX + 8, 35, 8, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.globalAlpha = 1.0;
+    }
+    
+    // 2. Center panel: Score
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+    ctx.fillRect(width/2 - 95, 10, 190, 30);
+    ctx.strokeStyle = '#000000';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(width/2 - 95, 10, 190, 30);
+    
+    ctx.fillStyle = '#000000';
     ctx.font = '12px "Press Start 2P", monospace';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText(`Score: ${score}`, width/2, 25);
     
-    // Draw world and level info at top right
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
-    ctx.fillRect(width - 210, 10, 200, 30);
+    // 3. Right panel: World info and tokens
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+    ctx.fillRect(width - 200, 10, 190, 30);
+    ctx.strokeStyle = '#000000';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(width - 200, 10, 190, 30);
     
-    ctx.fillStyle = '#FFFFFF';
+    ctx.fillStyle = '#000000';
     ctx.font = '12px "Press Start 2P", monospace';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText(`World ${currentWorld+1}-${currentLevel+1}`, width - 110, 25);
+    ctx.fillText(`World ${currentWorld+1}-${currentLevel+1}`, width - 105, 25);
     
-    // Draw health and lives - now separated with health at top and lives below
-    // Health section
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
-    ctx.fillRect(10, 10, 200, 30); // Shorter box just for health
+    // 4. Collectibles counter panel
+    const tokenY = 55;
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+    ctx.fillRect(width - 200, tokenY - 5, 190, 30);
+    ctx.strokeStyle = '#000000';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(width - 200, tokenY - 5, 190, 30);
     
-    // Draw health bar
-    ctx.fillStyle = '#666666';
-    ctx.fillRect(20, 18, 150, 15);
+    // Draw coins collected
+    ctx.fillStyle = '#000000';
+    ctx.beginPath();
+    ctx.arc(width - 180, tokenY + 10, 10, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.fillText(collectibles.bones.toString(), width - 160, tokenY + 10);
     
-    // Draw current health
-    ctx.fillStyle = '#FF3333';
-    const healthWidth = (health / maxHealth) * 150;
-    ctx.fillRect(20, 18, healthWidth, 15);
+    // Draw kills counter
+    ctx.fillStyle = '#00AA00';
+    ctx.beginPath();
+    ctx.arc(width - 130, tokenY + 10, 10, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#000000';
+    ctx.fillText(collectibles.kills.toString(), width - 110, tokenY + 10);
     
-    // Draw health text
-    ctx.fillStyle = '#FFFFFF';
+    // Draw special tokens (visas)
+    ctx.fillStyle = '#0000FF';
+    ctx.beginPath();
+    ctx.arc(width - 80, tokenY + 10, 10, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#000000';
+    ctx.fillText(collectibles.visas.toString(), width - 60, tokenY + 10);
+    
+    // Draw small labels
+    ctx.font = '8px "Press Start 2P", monospace';
+    ctx.fillText("Coins", width - 180, tokenY + 25);
+    ctx.fillText("Kills", width - 130, tokenY + 25);
+    ctx.fillText("Special", width - 80, tokenY + 25);
+    
+    // 5. Health bar at left below lives
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+    ctx.fillRect(10, 60, 190, 30);
+    ctx.strokeStyle = '#000000';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(10, 60, 190, 30);
+    
+    // Health label
+    ctx.fillStyle = '#000000';
     ctx.font = '12px "Press Start 2P", monospace';
     ctx.textAlign = 'left';
     ctx.textBaseline = 'top';
-    ctx.fillText(`HP: ${health}/${maxHealth}`, 25, 20);
+    ctx.fillText('Health', 15, 65);
+    ctx.fillText(`${health}/${maxHealth}`, 160, 65);
     
-    // Lives section - now moved below health
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
-    ctx.fillRect(10, 50, 200, 30); // Separate box for lives below health
+    // Health bar background
+    ctx.fillStyle = '#CCCCCC';
+    ctx.fillRect(15, 85, 180, 10);
     
-    // Draw lives (hearts)
-    for (let i = 0; i < hearts; i++) {
-      ctx.fillStyle = i < hearts ? '#FF3333' : '#666666';
-      // Draw heart shape
-      ctx.beginPath();
-      const heartX = 20 + (i * 30);
-      const heartY = 65;
-      
-      // Heart shape using bezier curves
-      ctx.moveTo(heartX, heartY + 5);
-      ctx.bezierCurveTo(heartX, heartY + 3, heartX - 5, heartY - 2, heartX - 10, heartY + 5);
-      ctx.bezierCurveTo(heartX - 15, heartY + 10, heartX - 5, heartY + 15, heartX, heartY + 12);
-      ctx.bezierCurveTo(heartX + 5, heartY + 15, heartX + 15, heartY + 10, heartX + 10, heartY + 5);
-      ctx.bezierCurveTo(heartX + 5, heartY - 2, heartX, heartY + 3, heartX, heartY + 5);
-      ctx.fill();
-    }
-    
-    // Draw lives text
-    ctx.fillStyle = '#FFFFFF';
-    ctx.font = '12px "Press Start 2P", monospace';
-    ctx.textAlign = 'left';
-    ctx.fillText(`Lives: ${hearts}`, 110, 60);
+    // Health bar fill
+    ctx.fillStyle = '#FFCC00';
+    const healthWidth = (health / maxHealth) * 180;
+    ctx.fillRect(15, 85, healthWidth, 10);
     
     // Draw pause instructions
     if (isPaused) {
