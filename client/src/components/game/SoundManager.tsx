@@ -45,6 +45,29 @@ export default function SoundManager() {
     };
   }, [phase, backgroundMusic, isMuted]);
   
+  // Handle user interaction to enable audio (browser autoplay policy)
+  useEffect(() => {
+    const enableAudio = () => {
+      if (backgroundMusic && phase === "playing" && !isMuted) {
+        // Try to play the background music
+        backgroundMusic.play().catch(err => {
+          console.log("Background music play prevented:", err);
+        });
+      }
+    };
+
+    // These events indicate user interaction
+    window.addEventListener("click", enableAudio);
+    window.addEventListener("touchstart", enableAudio);
+    window.addEventListener("keydown", enableAudio);
+    
+    return () => {
+      window.removeEventListener("click", enableAudio);
+      window.removeEventListener("touchstart", enableAudio);
+      window.removeEventListener("keydown", enableAudio);
+    };
+  }, [backgroundMusic, phase, isMuted]);
+
   // Keyboard listener for mute toggle (M key)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {

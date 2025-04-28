@@ -37,7 +37,7 @@ export const useAudio = create<AudioState>((set, get) => ({
   saveSound: null,
   levelCompleteSound: null,
   barkSound: null,
-  isMuted: true, // Start muted by default
+  isMuted: false, // Start unmuted by default
   
   setBackgroundMusic: (music) => set({ backgroundMusic: music }),
   setHitSound: (sound) => set({ hitSound: sound }),
